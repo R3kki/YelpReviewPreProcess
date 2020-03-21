@@ -1,7 +1,7 @@
 import pandas as pd
 import re
 
-# returns a words[][] each row contains a list of words for that review
+# returns a pandas dataframe object
 def CSV_Reader(str):
     data = pd.read_csv(str)
     text = data["text"]
@@ -20,20 +20,22 @@ def CSV_Reader(str):
             srw.append(clean_word)
         words.append(srw)
 
-    return words
+    df = {
+        'ID': id,
+        'class': label,
+        'words': words
+    }
+    df = pd.DataFrame(df)
 
-def CSV_Cleaner():
+    return df
+
+def Get_Data():
     file_name = "./../train2.csv"
-    data = pd.read_csv(str)
-    label = data["class"]
-    id = data["ID"]
-    words = CSV_Reader(file_name)
-
-    print(words[0][0])
-
-
-
+    df = CSV_Reader(file_name)
+    new_train_file = "./../clean_train.csv"
+    df.to_csv(new_train_file, encoding='utf-8', index=False)
 
 def main():
-    CSV_Cleaner()
+    Get_Data()
+
 main()
