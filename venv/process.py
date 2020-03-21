@@ -33,34 +33,68 @@ def CSV_Reader(str):
 
     return df
 
-def Get_CSV():
+def DF_to_CSV(df, new_name):
     ''' Run Once: get the cleaned data into a csv file '''
-
-    file_name = "./../train2.csv"
-    df = CSV_Reader(file_name)
-    new_train_file = "./../clean_train.csv"
+    new_train_file = "./../" + new_name
     df.to_csv(new_train_file, encoding='utf-8', index=False)
 
 
-def Get_Data():
+def DF_to_PKL(df, new_name):
     ''' Avoid reading the data each time to process the original .csv.
         Returns new object removes special characters, whitespace, and puts into a dataframe object '''
+    new_pkl_file = "./../" + new_name
+    df.to_pickle(new_pkl_file)
 
-    file_name = "./../train2.csv"
+def Get_DF_from_PKL(new_name):
+    ''' Returns df object from pkl file'''
+    pkl_name = "./../" +new_name
+    train_data = pickle.load(open(pkl_name, "rb"))
+    return train_data
+
+def Remove_Stop_Words(data):
+    ''' Returns df object with removed words from stop list file'''
+    stop_file = "./../stop_words.lst"
+    stop_words = [line.rstrip('\n') for line in open(stop_file)]
+
+    text = data["words"]
+
+    words = []
+    for i in range(len(text)):
+        text_row = []
+        for j in range(len(text[i])):
+            # clean up words. i.e. "Fun should be fun
+            w = text[i][j]
+            if w not in stop_words:
+                text_row.append(w)
+        words.append(text_row)
+
+    tupled_words = [tuple(word) for word in words]
+    label = data["class"]
+    id = data["ID"]
+    df_sw = {
+        'ID': id,
+        'class': label,
+        'words': tupled_words
+    }
+    df = pd.DataFrame(df_sw)
+    return df
+
+def Get_Original_CSV(file_name):
     df = CSV_Reader(file_name)
-    df.to_pickle("./../clean_train.pkl")
+    DF_to_CSV(df, "clean_train.csv")
+    DF_to_PKL(df, "clean_train.pkl")
 
-def Read_Data():
-    train_data = pickle.load(open("./../clean_train.pkl", "rb"))
-    print(train_data)
 
 def main():
     ''' Run Once: get pandas object (pickle) as a new file. then comment out '''
-    # Get_Data()
+    Get_Original_CSV("./../train2.csv") # outputs: clean_train.csv, clean_train.pkl
     ''' Comment out above '''
 
     ''' Start Pre-processing methods '''
-    Read_Data()
+
+    clean_df = Get_DF_from_PKL("clean_train.pkl")
+    stop_df = Remove_Stop_Words(clean_df)
+    DF_to_CSV(stop_df, "stop_df.csv")
 
 
 main()
