@@ -59,9 +59,29 @@ def Get_Original_CSV(file_name):
 def Basic_Stop_Words(pkl_name):
     clean_df = Get_DF_from_PKL(pkl_name)
     m = preprocess(clean_df)
-    stop_df = m.removeStopWords()
+    stop_df = m.removeStopWords("./../stop_words.lst")
     DF_to_PKL(stop_df, "02_stop_df.pkl")
     DF_to_CSV(stop_df, "02_stop_df.csv")
+
+def Remove_Infrequent_Words(freq, pkl_name):
+    basic_stop_df = Get_DF_from_PKL(pkl_name)
+    s = stats(basic_stop_df)
+    dict = s.getDictionary() # returns dictionary
+
+    new_stop_words = [key for (key, value) in dict.items() if value <= freq ]
+
+    ''' only needed to update the stop list file '''
+    with open("./../stop_words_new.lst", "a") as og_stop_file:
+        for word in new_stop_words:
+            og_stop_file.write(word+'\n')
+
+    m = preprocess(basic_stop_df)
+    stop_df = m.removeStopWords("./../stop_words_new.lst")
+    full_name = re.split(r"\.", pkl_name)
+    f_name =    full_name[0] + "_rem_freq" + str(freq)
+    DF_to_PKL(stop_df, f_name+".pkl")
+    DF_to_CSV(stop_df, f_name+".csv")
+
 
 def main():
     ''' Data Preprocessing Pipeline '''
@@ -74,10 +94,10 @@ def main():
     # Basic_Stop_Words("01_clean_train.pkl") # outputs: 02_stop_df.csv, 02_stop_df.pkl
     ''' Comment-out above after use '''
 
-    """ 1.5 Get statistics of words """
-    basic_stop_df = Get_DF_from_PKL("02_stop_df.pkl")
-    s = stats(basic_stop_df)
-    stats_basic = s.frequencyList()
+    """ 2. Remove words with frequency less than 10  """
+    Remove_Infrequent_Words(10, "02_stop_df.pkl") # outputs: 02_stop_df_rem_freq_10.csv, 02_stop_df_df_rem_freq_10.pkl
+
+
 
 
 

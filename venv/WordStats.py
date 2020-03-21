@@ -1,6 +1,5 @@
 ''' Data collection techniques given a dataframe object'''
 import pandas as pd
-import collections
 import operator
 
 class WordStats:
@@ -8,7 +7,7 @@ class WordStats:
         self.data = data
         self.dict = {}
 
-    def frequencyList(self):
+        ''' create dictionary '''
         id = self.data["ID"]
         label = self.data["class"]
         text = self.data["words"]
@@ -21,9 +20,12 @@ class WordStats:
                 w = text[i][j]
                 self.dict[w] = self.dict.get(w, 0) + 1
 
+    def getDF(self):
+        ''' Returns dataframe object -> type: dictionary '''
         sorted_x = sorted(self.dict.items(), key=operator.itemgetter(1), reverse=True)
-        sorted_dict = collections.OrderedDict(sorted_x)
+        return pd.DataFrame.from_dict(sorted_x)
 
-        print(sorted_dict)
+    def getDictionary(self):
+        return self.dict
 
-        # show a chart of the words and its frequency
+

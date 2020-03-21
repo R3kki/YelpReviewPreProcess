@@ -4,9 +4,8 @@ class ProcessData:
     def __init__(self, data):
         self.data = data
 
-    def removeStopWords(self):
+    def removeStopWords(self, stop_file):
         ''' Returns df object with removed words from stop list file'''
-        stop_file = "./../stop_words.lst"
         stop_words = [line.rstrip('\n') for line in open(stop_file)]
 
         id = self.data["ID"]
