@@ -1,4 +1,5 @@
 ''' Different Preprocessing Methods given a dataframe object'''
+import pandas as pd
 class ProcessData:
     def __init__(self, data):
         self.data = data
