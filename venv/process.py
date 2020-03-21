@@ -2,6 +2,7 @@ import pandas as pd
 import re
 import pickle
 from ProcessData import ProcessData as preprocess
+from WordStats import WordStats as stats
 
 def CSV_Reader(str):
     ''' Reads CSV and returns a pandas dataframe object '''
@@ -19,7 +20,7 @@ def CSV_Reader(str):
             clean_word = re.sub('[^\S]', '', clean_word) # selects non-whitespace
             # all lowercase
             clean_word = clean_word.lower()
-            if len(clean_word) > 0: # avoid adding ""
+            if len(clean_word) > 2: # avoid adding "", single characters, double characters
                 srw.append(clean_word)
         words.append(srw)
 
@@ -52,19 +53,33 @@ def Get_DF_from_PKL(new_name):
 
 def Get_Original_CSV(file_name):
     df = CSV_Reader(file_name)
-    DF_to_CSV(df, "clean_train.csv")
-    DF_to_PKL(df, "clean_train.pkl")
+    DF_to_CSV(df, "01_clean_train.csv")
+    DF_to_PKL(df, "01_clean_train.pkl")
+
+def Basic_Stop_Words(pkl_name):
+    clean_df = Get_DF_from_PKL(pkl_name)
+    m = preprocess(clean_df)
+    stop_df = m.removeStopWords()
+    DF_to_PKL(stop_df, "02_stop_df.pkl")
+    DF_to_CSV(stop_df, "02_stop_df.csv")
 
 def main():
-    ''' Run Once: get pandas object (pickle) as a new file. then comment out '''
-    # Get_Original_CSV("./../train2.csv") # outputs: clean_train.csv, clean_train.pkl
+    ''' Data Preprocessing Pipeline '''
+
+    ''' 0. Given the original dataset '''
+    # Get_Original_CSV("./../train2.csv") # outputs: 01_clean_train.csv, 01_clean_train.pkl
     ''' Comment-out above after use '''
 
-    ''' Start Pre-processing methods '''
-    clean_df = Get_DF_from_PKL("clean_train.pkl")
-    m = preprocess(clean_df)
-    stop_df = m.removeStopWords() # takes a long time -> comment out
-    ''' Comment-out above '''
-    DF_to_CSV(stop_df, "stop_df.csv")
+    """ 1. Removing Words with Basic Stop Word List """
+    # Basic_Stop_Words("01_clean_train.pkl") # outputs: 02_stop_df.csv, 02_stop_df.pkl
+    ''' Comment-out above after use '''
+
+    """ 1.5 Get statistics of words """
+    basic_stop_df = Get_DF_from_PKL("02_stop_df.pkl")
+    s = stats(basic_stop_df)
+    stats_basic = s.frequencyList()
+
+
+
 
 main()
