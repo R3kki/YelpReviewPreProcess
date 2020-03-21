@@ -21,8 +21,8 @@ class WordStats:
                 w = text[i][j]
                 self.dict[w] = self.dict.get(w, 0) + 1
 
-        sorted_x = sorted(self.dict.items(), key=operator.itemgetter(1))
-        sorted_dict = collections.OrderedDict(sorted_x.reverse())
+        sorted_x = sorted(self.dict.items(), key=operator.itemgetter(1), reverse=True)
+        sorted_dict = collections.OrderedDict(sorted_x)
 
         print(sorted_dict)
 
