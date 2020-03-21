@@ -66,17 +66,17 @@ def Basic_Stop_Words(pkl_name):
 def Remove_Infrequent_Words(freq, pkl_name):
     basic_stop_df = Get_DF_from_PKL(pkl_name)
     s = stats(basic_stop_df)
-    dict = s.getDictionary() # returns dictionary
+    old_dict = s.getDictionary() # returns dictionary
 
-    new_stop_words = [key for (key, value) in dict.items() if value <= freq ]
+    new_dict = {key: value for key, value in old_dict.items() if value <= freq }
 
-    ''' only needed to update the stop list file '''
-    with open("./../stop_words_new.lst", "a") as og_stop_file:
-        for word in new_stop_words:
-            og_stop_file.write(word+'\n')
+    ''' create a new file for the stop words and only run on those words '''
+    og_stop_file = open("./../stop_words_new.lst", "w+")
+    for word in new_dict:
+        og_stop_file.write(word + '\n')
 
     m = preprocess(basic_stop_df)
-    stop_df = m.removeStopWords("./../stop_words_new.lst")
+    stop_df = m.removeWithDict(new_dict)
     full_name = re.split(r"\.", pkl_name)
     f_name =    full_name[0] + "_rem_freq" + str(freq)
     DF_to_PKL(stop_df, f_name+".pkl")
