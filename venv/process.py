@@ -15,12 +15,12 @@ def CSV_Reader(str):
         srw = []
         single_review_words = text[i].split()
         for word in single_review_words:
-            # clean up words. i.e. "Fun should be fun
-            clean_word = re.sub('[^A-Za-z]+', ' ', word) # seperate i.e. pizza!!Tony -> pizzaTony
+            clean_word = re.sub('[^A-Za-z]+', ' ', word) # no special char i.e. pizza!!Tony -> pizzaTony
             clean_word = re.sub('[^\S]', '', clean_word) # selects non-whitespace
             # all lowercase
             clean_word = clean_word.lower()
-            srw.append(clean_word)
+            if len(clean_word) > 0: # avoid adding ""
+                srw.append(clean_word)
         words.append(srw)
 
     tupled_words = [tuple(word) for word in words]
