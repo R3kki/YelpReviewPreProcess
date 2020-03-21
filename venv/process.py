@@ -1,6 +1,7 @@
 import pandas as pd
 import re
 import pickle
+from ProcessData import ProcessData as preprocess
 
 def CSV_Reader(str):
     ''' Reads CSV and returns a pandas dataframe object '''
@@ -51,34 +52,6 @@ def Get_DF_from_PKL(new_name):
     train_data = pickle.load(open(pkl_name, "rb"))
     return train_data
 
-def Remove_Stop_Words(data):
-    ''' Returns df object with removed words from stop list file'''
-    stop_file = "./../stop_words.lst"
-    stop_words = [line.rstrip('\n') for line in open(stop_file)]
-
-    text = data["words"]
-
-    words = []
-    for i in range(len(text)):
-        text_row = []
-        for j in range(len(text[i])):
-            # clean up words. i.e. "Fun should be fun
-            w = text[i][j]
-            if w not in stop_words:
-                text_row.append(w)
-        words.append(text_row)
-
-    tupled_words = [tuple(word) for word in words]
-    label = data["class"]
-    id = data["ID"]
-    df_sw = {
-        'ID': id,
-        'class': label,
-        'words': tupled_words
-    }
-    df = pd.DataFrame(df_sw)
-    return df
-
 def Get_Original_CSV(file_name):
     df = CSV_Reader(file_name)
     DF_to_CSV(df, "clean_train.csv")
@@ -87,14 +60,13 @@ def Get_Original_CSV(file_name):
 
 def main():
     ''' Run Once: get pandas object (pickle) as a new file. then comment out '''
-    Get_Original_CSV("./../train2.csv") # outputs: clean_train.csv, clean_train.pkl
+    # Get_Original_CSV("./../train2.csv") # outputs: clean_train.csv, clean_train.pkl
     ''' Comment out above '''
 
     ''' Start Pre-processing methods '''
-
     clean_df = Get_DF_from_PKL("clean_train.pkl")
-    stop_df = Remove_Stop_Words(clean_df)
+    m = preprocess(clean_df)
+    stop_df = m.removeStopWords()
     DF_to_CSV(stop_df, "stop_df.csv")
-
 
 main()
