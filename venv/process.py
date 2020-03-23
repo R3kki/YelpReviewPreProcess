@@ -71,7 +71,7 @@ def Remove_Infrequent_Words(freq, pkl_name):
     new_dict = {key: value for key, value in old_dict.items() if value <= freq }
 
     ''' create a new file for the stop words and only run on those words '''
-    og_stop_file = open("./../stop_words_new.lst", "w+")
+    og_stop_file = open("./../stop_words_"+freq+".lst", "w+")
     for word in new_dict:
         og_stop_file.write(word + '\n')
 
@@ -95,8 +95,12 @@ def main():
     ''' Comment-out above after use '''
 
     """ 2. Remove words with frequency less than 10  """
-    Remove_Infrequent_Words(10, "02_stop_df.pkl") # outputs: 02_stop_df_rem_freq_10.csv, 02_stop_df_df_rem_freq_10.pkl
+    # Remove_Infrequent_Words(10, "02_stop_df.pkl") # outputs: 02_stop_df_rem_freq_10.csv, 02_stop_df_df_rem_freq_10.pkl
+    ''' Comment-out above after use '''
 
+    train_data = pickle.load(open("./../02_stop_df_rem_freq10.pkl", "rb"))
+    words = train_data["words"]
+    print(len(words))
 
 
 
