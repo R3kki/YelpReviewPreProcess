@@ -16,10 +16,9 @@ def CSV_Reader(str, *args):
         srw = []
         single_review_words = text[i].split()
         for word in single_review_words:
-            clean_word = re.sub('[^A-Za-z]+', ' ', word) # no special char i.e. pizza!!Tony -> pizzaTony
-            clean_word = re.sub('[^\S]', '', clean_word) # selects non-whitespace
+            clean_word = re.sub('"', '', word) # removes " single everthing else appears in emojis
             clean_word = clean_word.lower() # all lowercase
-            if len(clean_word) > 2: # avoid adding "", single characters, double characters
+            if len(clean_word) > 0: # removes all empty lines
                 srw.append(clean_word)
         words.append(srw)
 
@@ -60,12 +59,12 @@ def Get_DF_from_PKL(new_name):
 def Get_Original_CSV(file_name, *args):
     if len(args) >= 1:
         df = CSV_Reader(file_name, True)
-        DF_to_CSV(df, "01_clean_test.csv")
-        DF_to_PKL(df, "01_clean_test.pkl")
+        DF_to_CSV(df, "00_clean_test.csv")
+        DF_to_PKL(df, "00_clean_test.pkl")
     else:
         df = CSV_Reader(file_name)
-        DF_to_CSV(df, "01_clean_train.csv")
-        DF_to_PKL(df, "01_clean_train.pkl")
+        DF_to_CSV(df, "00_clean_train.csv")
+        DF_to_PKL(df, "00_clean_train.pkl")
 
 def Basic_Stop_Words(pkl_name, *args):
     clean_df = Get_DF_from_PKL(pkl_name)
@@ -75,10 +74,21 @@ def Basic_Stop_Words(pkl_name, *args):
     else:
         stop_df = m.removeStopWords("./../stop_words.lst")
 
-    full_name = re.split(r"\.", pkl_name)
-    f_name = full_name[0] + "_stop_df"
+    f_name = "02_test_basic_stop" if len(args) >= 1 else "02_train_basic_stop"
     DF_to_PKL(stop_df, f_name + ".pkl")
     DF_to_CSV(stop_df, f_name + ".csv")
+
+def Emoji_to_Word(pkl_name, *args):
+    emoji_file = "./../emoji.csv"
+    data = pd.read_csv(fname)
+    emoji = data["emoji"]
+    text = data["text"]
+
+    # if len(args) >= 1:
+
+
+
+
 
 def Remove_Infrequent_Words(freq, pkl_name):
     basic_stop_df = Get_DF_from_PKL(pkl_name)
@@ -102,23 +112,26 @@ def Remove_Infrequent_Words(freq, pkl_name):
 def main():
     ''' Data Preprocessing Pipeline '''
 
-    ''' 0. Given the original dataset '''
-    # Get_Original_CSV("./../train2.csv", False) # outputs: 01_clean_train.csv, 01_clean_train.pkl
+    ''' 0. Test Data: to DF from CSV'''
+    Get_Original_CSV("./../test2.csv", True) # outputs: 01_clean_test.csv, 01_clean_test.pkl
     ''' Comment-out above after use '''
 
-    ''' 0.5 Get Test Stop words, frequencies too '''
-    # Get_Original_CSV("./../test2.csv", True) # outputs: 01_clean_test.csv, 01_clean_test.pkl
-    ''' Comment-out above after use '''
+    """ 0.5. Test Data: Transform emojis to words"""
+    Emoji_to_Word("00_clean_test_stop_df.pkl", True)
 
     """ 1. Test Data: Removing Words with Basic Stop Word List """
-    # Basic_Stop_Words("01_clean_test.pkl", True) # outputs: 01_clean_test_stop_df.csv, 01_clean_test_stop_df.pkl
+    # Basic_Stop_Words("01_clean_test.pkl", True) # outputs: 02_clean_test_basic_stop.csv, 02_clean_test_basic_stop.pkl
     ''' Comment-out above after use '''
 
-    basic_stop_df = Get_DF_from_PKL("01_clean_test_stop_df.pkl")
-    s = stats(basic_stop_df, True)
-    s.getDictionary()  # returns dictionary
-    basic_stop_df = s.getDF()
-    print(basic_stop_df)
+
+
+
+
+    # basic_stop_df = Get_DF_from_PKL("01_clean_test_stop_df.pkl")
+    # s = stats(basic_stop_df, True)
+    # s.getDictionary()  # returns dictionary
+    # basic_stop_df = s.getDF()
+    # print(basic_stop_df)
 
 
     """ 2. Test Data: Remove words with frequency less than 10  """

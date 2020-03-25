@@ -9,7 +9,6 @@ class ProcessData:
         words = []
 
         id = self.data["ID"]
-        if len(args) < 1: label = data["class"]
         text = self.data["words"]
         for i in range(len(text)):
             text_row = []
@@ -22,6 +21,7 @@ class ProcessData:
         tupled_words = [tuple(word) for word in words]
 
         if len(args) < 1: # training data
+            label = data["class"]
             df_sw = {
                 'ID': id,
                 'class': label,
@@ -41,7 +41,6 @@ class ProcessData:
         stop_words = [line.rstrip('\n') for line in open(stop_file)]
 
         id = self.data["ID"]
-        if len(args) < 1: label = data["class"]
         text = self.data["words"]
 
         words = []
@@ -57,6 +56,7 @@ class ProcessData:
         tupled_words = [tuple(word) for word in words]
 
         if len(args) < 1:  # training data
+            label = data["class"]
             df_sw = {
                 'ID': id,
                 'class': label,
