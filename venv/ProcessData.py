@@ -41,7 +41,7 @@ class ProcessData:
         stop_words = [line.rstrip('\n') for line in open(stop_file)]
 
         id = self.data["ID"]
-        if len(args) < 1: label = data["class"]
+        if len(args) < 1: label = self.data["class"]
         text = self.data["words"]
 
         words = []

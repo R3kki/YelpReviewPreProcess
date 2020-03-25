@@ -103,7 +103,7 @@ def main():
     ''' Data Preprocessing Pipeline '''
 
     ''' 0. Given the original dataset '''
-    # Get_Original_CSV("./../train2.csv", False) # outputs: 01_clean_train.csv, 01_clean_train.pkl
+    # Get_Original_CSV("./../train3.csv") #outputs: 01_clean_train.csv, 01_clean_train.pkl
     ''' Comment-out above after use '''
 
     ''' 0.5 Get Test Stop words, frequencies too '''
@@ -111,14 +111,14 @@ def main():
     ''' Comment-out above after use '''
 
     """ 1. Test Data: Removing Words with Basic Stop Word List """
-    # Basic_Stop_Words("01_clean_test.pkl", True) # outputs: 01_clean_test_stop_df.csv, 01_clean_test_stop_df.pkl
+    Basic_Stop_Words("01_clean_train.pkl") # outputs: 01_clean_test_stop_df.csv, 01_clean_test_stop_df.pkl
     ''' Comment-out above after use '''
 
-    basic_stop_df = Get_DF_from_PKL("01_clean_test_stop_df.pkl")
+    '''basic_stop_df = Get_DF_from_PKL("01_clean_test_stop_df.pkl")
     s = stats(basic_stop_df, True)
     s.getDictionary()  # returns dictionary
     basic_stop_df = s.getDF()
-    print(basic_stop_df)
+    print(basic_stop_df)'''
 
 
     """ 2. Test Data: Remove words with frequency less than 10  """
