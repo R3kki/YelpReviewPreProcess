@@ -1,19 +1,27 @@
 Goal: Find important features of the review text
 
-1. Create clean, similarly organized data: translate all parts into single format
-    1. Look at patterns of the test data set and find reoccurring features:
-        - Emojis: convert to text with emoji.csv
-            - find which emojis are even found in the test file: some are not found
-        - Number Star Review: convert "4 stars", 'three stars' into a separate class: distinguishable
-            i.e. 4 stars != very good; 4 stars = 'review=4' or 4stars (but this would be special case during the # removable phase)
-        - keep ! and ? next word but in the same order and only ?!: i.e. MATTER!!!!!!!!???????!!!!!!!! -> MATTER?!
-            or separate ! and ? and keep all of them
-        - keep capitals (unless training data doesnt have as much)
-        - 'aaaaaaa' -> a
-        - 'Goood' -> good
-        - 'OMGGGGG' -> OMG
-        - 'sooooo' -> so
-        - remove quotes (high priority, after checking for emojis since some use quotes)
+Create clean, similarly organized data: translate all parts into single format
+Look at patterns of the test data set and find reoccurring features:
+
+    1. Emojis: convert to text with emoji.csv
+        - find which emojis are even found in the test file: some are not found
+        - redo the .csv file to good and bad
+
+    2. Number Star Review: convert "4 stars", 'three stars' into a separate class: distinguishable
+        i.e. 4 stars != very good; 4 stars = 'review=4' or 4stars (but this would be special case during the # removable phase)
+
+    3. keep ! and ? next word but in the same order and only ?!: i.e. MATTER!!!!!!!!???????!!!!!!!! -> MATTER?!
+        or separate ! and ? and keep all of them
+
+    4. (maybe not) keep capitals (unless training data doesnt have as much)
 
 
-3.
+    - 'aaaaaaa' -> a
+    - 'Goood' -> good
+    - 'OMGGGGG' -> OMG
+    - 'sooooo' -> so
+
+
+    - remove quotes (high priority, after checking for emojis since some use quotes)
+
+

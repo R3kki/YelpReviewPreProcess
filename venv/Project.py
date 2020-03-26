@@ -1,6 +1,7 @@
 import pandas as pd
 import re
 import pickle
+import xlrd
 from ProcessData import ProcessData as preprocess
 from WordStats import WordStats as stats
 
@@ -11,8 +12,8 @@ def CSV_Reader(str, *args):
 
     words = []
     for i in range(len(text)):
-        single_review_words = text[i].split()
-        words.append(single_review_words)
+        w = text[i].split()
+        words.append(w)
 
     tupled_words = [tuple(word) for word in words]
 
@@ -22,12 +23,12 @@ def CSV_Reader(str, *args):
         df = {
             'ID': id,
             'class': label,
-            'words': tupled_words
+            'text': tupled_words
         }
     else:               # test data
         df = {
             'ID': id,
-            'words': tupled_words
+            'text': tupled_words
         }
 
     df = pd.DataFrame(df)
@@ -61,27 +62,51 @@ def Get_Original_CSV(file_name, *args):
         DF_to_CSV(df, "00_clean_train.csv")
         DF_to_PKL(df, "00_clean_train.pkl")
 
-def Emoji_to_Word(pkl_name):
-    emoji_file = "./../emoji.csv"
-    data = pd.read_csv(emoji_file)
-    emoji = data["emoji"]
-    emoji_text = data["text"]
+def Emoji_Process(pkl_name):
+    emoji_file = "./../emoji.xlsx"
+    data = pd.read_excel(emoji_file)
+    emoji_dict = data.set_index('emoji').T.to_dict('dict')
+    e_min = 10
+    e_max = 0
+    for key in emoji_dict.keys():
+        if len(key) < e_min:
+            e_min = len(key)
+        if len(key) > e_max:
+            e_max = len(key)
 
-    print(emoji)
+    df = Get_DF_from_PKL("00_clean_test.pkl")
+    # df = df.reindex(columns = ['ID', 'emoji', 'text'])
+    emojis = []
 
-    # emoji_dict = {}
-    # for i in range(len(emoji_text)):
-    #     text_row = []
-    #     emoji_dict[i] = emoji_dict.get(i, 0) + 1
-    #
-    # print(emoji_dict)
+    for row in df["text"]:
+        found_emojis = []
+        for word in row:
+            # find all substrings of the word that could possibly match an emoji
+            for size in range(e_min, e_max+1):
+                for index in range(len(word)-e_min+1):
+                    substr = word[index:index+size]
+                    if substr in emoji_dict:
+                        # emoji exists in the word
+                        found_emojis.append((substr))
+                        # print(word, substr)
+        emojis.append(found_emojis)
+    # tupled_emojis = [tuple(em) for em in emojis]
 
-    # clean_data = Get_DF_from_PKL("00_clean_test.pkl")
+    id = df["ID"]
+    text = df["text"]
+    df_em = {
+        'ID': id,
+        'emoji': emojis,
+        'text': text
+    }
+    df = pd.DataFrame(df_em)
+
+    DF_to_CSV(df,"01_emojis.csv")
+
+    return df
 
 
 
-
-    # if len(args) >= 1:
 
 def Basic_Stop_Words(pkl_name, *args):
     clean_df = Get_DF_from_PKL(pkl_name)
@@ -124,7 +149,7 @@ def main():
     ''' Comment-out above after use '''
 
     """ 0.5. Test Data: Transform emojis to words"""
-    Emoji_to_Word("00_clean_test_stop_df.pkl")
+    Emoji_Process("00_clean_test_stop_df.pkl")
 
     """ 1. Test Data: Removing Words with Basic Stop Word List """
     # Basic_Stop_Words("01_clean_test.pkl", True) # outputs: 02_clean_test_basic_stop.csv, 02_clean_test_basic_stop.pkl

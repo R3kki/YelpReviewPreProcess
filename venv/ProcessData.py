@@ -8,8 +8,8 @@ class ProcessData:
         ''' uses a dictionary to remove words '''
         words = []
 
-        id = self.data["ID"]
-        text = self.data["words"]
+
+        text = self.data["text"]
         for i in range(len(text)):
             text_row = []
             for j in range(len(text[i])):
@@ -20,17 +20,18 @@ class ProcessData:
 
         tupled_words = [tuple(word) for word in words]
 
+        id = self.data["ID"]
         if len(args) < 1: # training data
             label = data["class"]
             df_sw = {
                 'ID': id,
                 'class': label,
-                'words': tupled_words
+                'text': tupled_words
             }
         else: # test data
             df_sw = {
                 'ID': id,
-                'words': tupled_words
+                'text': tupled_words
             }
         df = pd.DataFrame(df_sw)
 
@@ -41,7 +42,7 @@ class ProcessData:
         stop_words = [line.rstrip('\n') for line in open(stop_file)]
 
         id = self.data["ID"]
-        text = self.data["words"]
+        text = self.data["text"]
 
         words = []
         for i in range(len(text)):
@@ -60,12 +61,12 @@ class ProcessData:
             df_sw = {
                 'ID': id,
                 'class': label,
-                'words': tupled_words
+                'text': tupled_words
             }
         else:  # test data
             df_sw = {
                 'ID': id,
-                'words': tupled_words
+                'text': tupled_words
             }
         df = pd.DataFrame(df_sw)
 

@@ -13,7 +13,7 @@ class WordStats:
         ''' create dictionary '''
         id = self.data["ID"]
         if len(args) < 1: label = data["class"]
-        text = self.data["words"]
+        text = self.data["text"]
 
         words = []
         for i in range(len(text)):
