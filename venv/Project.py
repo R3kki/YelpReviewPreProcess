@@ -14,12 +14,8 @@ def CSV_Reader(str, *args):
     for i in range(len(text)):
         word_row = []
         w = text[i].split()
-        ''' Separate Numbers and characters. i.e. 3stars = 3 stars '''
-        for word in w:
-            alpha_num = re.split('\d', word)
-            for a in alpha_num:
-                word_row.append(a)
-        words.append(word_row)
+        words.append(w)
+
 
     tupled_words = [tuple(word) for word in words]
 
@@ -148,78 +144,125 @@ def Rating_Process(pkl_name):
                 found_rating.append(clean_rating)
         rating.append(found_rating)
 
-    rated = clean_word(df["text"], '[^A-Za-z0-9!?]')
-
-    ''' Star Ratings '''
-    Numbers = ["zero", "one", "two", "three", "four", "five", "six", "seven",
-               "eight", "nine", "ten", "eleven"]
-    for i in range (111): # since people do not usually type fifty-stars but maybe 50 stars
-        Numbers.append(str(i))
-    number_dict = dict.fromkeys(Numbers, 0)
-    n_min, n_max = min_max_key_length(number_dict)
-
-    Stars = ["stars", "star"]
-    star_dict = dict.fromkeys(Stars, 0)
-    s_min, s_max = min_max_key_length(star_dict)
-
-    fixed_numbers = []
-
-    # combine numbers if consecutive. i.e [prev] 3, [curr] 5 -> then 3.5
-    for i in range(len(rated)):
-        fixed_rows = []
-        prev = rated[i][0]
-        for j in range(len(rated[i])):
-            if j > 0 and prev in number_dict and rated[i][j] in number_dict:
-                # remove the previous number and just use the current word as the new combined #
-                fixed_rows[j-1] = ''
-                fixed_rows.append(prev + "." + rated[i][j])
-            else:
-                fixed_rows.append(rated[i][j])
-            prev = rated[i][j]
-        fixed_numbers.append(fixed_rows)
-
-    star_reviews = []
-    for review in fixed_numbers:
-        found_star_reviews = []
-        prev = review[0][0]
+    ''' Remove all dates and ratings from the data set'''
+    text = []
+    for review in df["text"]:
+        words = []
         for word in review:
-            curr_word_is_star = False
-            # look if the current word is "stars" or "star"
-            for s_size in range(s_min, s_max + 1):
-                for index in range(len(word) - s_min + 1):
-                    substar = word[index:index + s_size]
-                    if substar in star_dict:
-                        curr_word_is_star = True
-            # check if previous word is a #: i.e. [prev] 4, [curr] stars
-            prev_word_is_number = False
-            star_review = ''
-            if curr_word_is_star:
-                for n_size in range(n_min, n_max + 1):
-                    for n_index in range(len(prev) - n_min + 1):
-                        subnumber = prev[index:index + n_size]
-                        if subnumber in number_dict:
-                            prev_word_is_number = True
-                            star_review = subnumber
-            if prev_word_is_number:
-                found_star_reviews.append(subnumber)
-            prev = word
-        star_reviews.append(found_star_reviews)
+            if "/" not in word:
+                words.append(word)
+        text.append(words)
 
-    text = clean_word(df["text"], '[^A-Za-z!?]')
+    tupled_words = [tuple(word) for word in text]
 
     id = df["ID"]
     emojis =df["emoji"]
-    df_star = {
+    df_rate = {
         'ID': id,
         'emoji' : emojis,
         'rate'  : rating,
-        'star'  : star_reviews,
-        'text'  : text
+        'text'  : tupled_words
     }
-    df = pd.DataFrame(df_star)
+    df = pd.DataFrame(df_rate)
 
-    DF_to_CSV(df, "02_rating.csv")
-    DF_to_PKL(df, "02_rating.pkl")
+    DF_to_CSV(df, "02_Rating.csv")
+    DF_to_PKL(df, "02_Rating.pkl")
+    return df
+
+
+def Star_Review(pkl_name):
+    df = Get_DF_from_PKL(pkl_name)
+
+    ''' Separate Numbers and characters. i.e. 3stars = 3 stars '''
+    # for word in w:
+    #     alpha_num = re.split('(\d+)', word)
+    #     for a in alpha_num:
+    #         if len(a) > 0:
+    #             word_row.append(a)
+    # words.append(word_row)
+
+    rated = clean_word(df["text"], '[^A-Za-z0-9!?]')
+
+    ''' Star Ratings '''
+    # Numbers = ["zero", "one", "two", "three", "four", "five", "six", "seven",
+    #            "eight", "nine", "ten", "eleven"]
+    # for i in range (111): # since people do not usually type fifty-stars but maybe 50 stars
+    #     Numbers.append(str(i))
+    # number_dict = dict.fromkeys(Numbers, 0)
+    # n_min, n_max = min_max_key_length(number_dict)
+    #
+    # Stars = ["stars", "star", "Stars", "Star", "STARS", "STAR"]
+    # star_dict = dict.fromkeys(Stars, 0)
+    # s_min, s_max = min_max_key_length(star_dict)
+    #
+    # fixed_numbers = []
+    #
+    # # combine numbers if consecutive. i.e [prev] 3, [curr] 5 -> then 3.5
+    # for i in range(len(rated)):
+    #     fixed_rows = []
+    #     prev = ''
+    #     for j in range(len(rated[i])):
+    #         if j > 0 and prev in number_dict and rated[i][j] in number_dict:
+    #             # remove the previous number and just use the current word as the new combined #
+    #             fixed_rows[j-1] = ''
+    #             fixed_rows.append(prev + "." + rated[i][j])
+    #         else:
+    #             fixed_rows.append(rated[i][j])
+    #         prev = rated[i][j]
+    #     fixed_numbers.append(fixed_rows)
+    #
+    # # remove the empty and words that have been replace/combined
+    #
+    # text = []
+    # for review in fixed_numbers:
+    #     text_row = []
+    #     for word in review:
+    #         if len(word) > 0:
+    #             text_row.append(word)
+    #     text.append(text_row)
+    #
+    # star_reviews = []
+    # for review in text:
+    #     found_star_reviews = []
+    #     prev = ''
+    #     for word in review:
+    #         curr_word_is_star = False
+    #         # look if the current word is "stars" or "star"
+    #         for s_size in range(s_min, s_max + 1):
+    #             for index in range(len(word) - s_min + 1):
+    #                 substar = word[index:index + s_size]
+    #                 if substar in star_dict:
+    #                     curr_word_is_star = True
+    #         # check if previous word is a #: i.e. [prev] 4, [curr] stars
+    #         prev_word_is_number = False
+    #         star_review = ''
+    #         if curr_word_is_star:
+    #             for n_size in range(n_min, n_max + 1):
+    #                 for n_index in range(len(prev) - n_min + 1):
+    #                     subnumber = prev[index:index + n_size]
+    #                     if subnumber in number_dict:
+    #                         prev_word_is_number = True
+    #                         star_review = subnumber
+    #         if prev_word_is_number:
+    #             found_star_reviews.append(subnumber)
+    #         prev = word
+    #     star_reviews.append(found_star_reviews)
+    #
+    # text = clean_word(df["text"], '[^A-Za-z!?]')
+    #
+    # id = df["ID"]
+    # emojis =df["emoji"]
+    # df_star = {
+    #     'ID': id,
+    #     'emoji' : emojis,
+    #     'rate'  : rating,
+    #     'star'  : star_reviews,
+    #     'text'  : text
+    # }
+    # df = pd.DataFrame(df_star)
+    #
+    # DF_to_CSV(df, "02_rating.csv")
+    # DF_to_PKL(df, "02_rating.pkl")
 
 def Basic_Stop_Words(pkl_name, *args):
     clean_df = Get_DF_from_PKL(pkl_name)
@@ -261,10 +304,12 @@ def main():
     """ 0.1 Test Data: Add attribute: Emojis """
     # Emoji_Process("00_clean_test_stop_df.pkl")
 
-    """ 0.2 Test Data: Add attribute: Star Reviews """
-    # Rating_Process("01_emoji.pkl")
+    """ 0.2 Test Data: Add attribute: Rating out of 10 """
+    Rating_Process("01_emoji.pkl")
 
-    """ 0.3 Test Data: Add attribute: # of ! and # of ? """
+    """ 0.3 Test Data: Add attribute: Star Reviews"""
+
+    """ 0.4 Test Data: Add attribute: # of ! and # of ? """
 
 
 
