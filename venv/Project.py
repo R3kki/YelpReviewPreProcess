@@ -131,7 +131,6 @@ def Emoji_Process(pkl_name):
 
     return df
 
-
 def Rating_Process(pkl_name):
     df = Get_DF_from_PKL(pkl_name)
 
@@ -222,7 +221,6 @@ def Rating_Process(pkl_name):
     DF_to_CSV(df, "02_rating.csv")
     DF_to_PKL(df, "02_rating.pkl")
 
-
 def Basic_Stop_Words(pkl_name, *args):
     clean_df = Get_DF_from_PKL(pkl_name)
     m = preprocess(clean_df)
@@ -234,8 +232,6 @@ def Basic_Stop_Words(pkl_name, *args):
     f_name = "02_test_basic_stop" if len(args) >= 1 else "02_train_basic_stop"
     DF_to_PKL(stop_df, f_name + ".pkl")
     DF_to_CSV(stop_df, f_name + ".csv")
-
-
 
 def Remove_Infrequent_Words(freq, pkl_name):
     basic_stop_df = Get_DF_from_PKL(pkl_name)
@@ -259,30 +255,22 @@ def Remove_Infrequent_Words(freq, pkl_name):
 def main():
     ''' Data Preprocessing Pipeline '''
 
-    ''' 0. Test Data: to DF from CSV'''
+    ''' 0. Test Data: to DF from CSV '''
     # Get_Original_CSV("./../test2.csv", True) # outputs: 01_clean_test.csv, 01_clean_test.pkl
-    ''' Comment-out above after use '''
 
-    """ 0.1 Test Data: Add attribute: Emojis"""
+    """ 0.1 Test Data: Add attribute: Emojis """
     # Emoji_Process("00_clean_test_stop_df.pkl")
 
-    """ 0.2 Test Data: Add attribute: Star Reviews"""
-    Rating_Process("01_emoji.pkl")
+    """ 0.2 Test Data: Add attribute: Star Reviews """
+    # Rating_Process("01_emoji.pkl")
+
+    """ 0.3 Test Data: Add attribute: # of ! and # of ? """
+
+
+
 
     """ 1. Test Data: Removing Words with Basic Stop Word List """
     # Basic_Stop_Words("01_clean_test.pkl", True) # outputs: 02_clean_test_basic_stop.csv, 02_clean_test_basic_stop.pkl
-    ''' Comment-out above after use '''
-
-
-
-
-
-    # basic_stop_df = Get_DF_from_PKL("01_clean_test_stop_df.pkl")
-    # s = stats(basic_stop_df, True)
-    # s.getDictionary()  # returns dictionary
-    # basic_stop_df = s.getDF()
-    # print(basic_stop_df)
-
 
     """ 2. Test Data: Remove words with frequency less than 10  """
     # Remove_Infrequent_Words(10, "02_stop_df.pkl") # outputs: 02_stop_df_rem_freq_10.csv, 02_stop_df_df_rem_freq_10.pkl

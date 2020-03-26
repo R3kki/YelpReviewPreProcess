@@ -6,6 +6,7 @@ Look at patterns of the test data set and find reoccurring features:
     1. Emojis: convert to text with emoji.csv
         - find which emojis are even found in the test file: some are not found
         - redo the .csv file to good and bad
+    - remove quotes (high priority, after checking for emojis since some use quotes)
 
     2. Number Star Review: convert "4 stars", 'three stars' into a separate class: distinguishable
         i.e. 4 stars != very good; 4 stars = 'review=4' or 4stars (but this would be special case during the # removable phase)
@@ -14,16 +15,20 @@ Look at patterns of the test data set and find reoccurring features:
             - 10/10 change to 10
     3. keep ! and ? next word but in the same order and only ?!: i.e. MATTER!!!!!!!!???????!!!!!!!! -> MATTER?!
         or separate ! and ? and keep all of them
+        - count number of ! and ?
 
     4. (maybe not) keep capitals (unless training data doesnt have as much)
+    - find number of all capitalized words
 
-
+    5. Misspelt word count?
+    - keep misspellings and then count number of words that are misspelt then change them into real words
     - 'aaaaaaa' -> a
     - 'Goood' -> good
     - 'OMGGGGG' -> OMG
     - 'sooooo' -> so
 
+    6.
 
-    - remove quotes (high priority, after checking for emojis since some use quotes)
+
 
 
