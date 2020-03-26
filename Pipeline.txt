@@ -27,7 +27,9 @@ Look at patterns of the test data set and find reoccurring features:
     - 'OMGGGGG' -> OMG
     - 'sooooo' -> so
 
-    6.
+    6.Count number of positive words and neg words in each review. 
+        - match pos and neg words from each review w given neg and pos words dataset.
+       
 
 
 
