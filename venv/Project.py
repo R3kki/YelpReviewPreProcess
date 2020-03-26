@@ -12,8 +12,14 @@ def CSV_Reader(str, *args):
 
     words = []
     for i in range(len(text)):
+        word_row = []
         w = text[i].split()
-        words.append(w)
+        ''' Separate Numbers and characters. i.e. 3stars = 3 stars '''
+        for word in w:
+            alpha_num = re.split('\d', word)
+            for a in alpha_num:
+                word_row.append(a)
+        words.append(word_row)
 
     tupled_words = [tuple(word) for word in words]
 
@@ -62,22 +68,41 @@ def Get_Original_CSV(file_name, *args):
         DF_to_CSV(df, "00_clean_train.csv")
         DF_to_PKL(df, "00_clean_train.pkl")
 
+def min_max_key_length(dict):
+    min = 10000000
+    max = 0
+    for key in dict.keys():
+        if len(key) < min:
+            min = len(key)
+        if len(key) > max:
+            max = len(key)
+
+    return min, max
+
+def clean_word(df_col, regex):
+    new_reviews = []
+    for row in df_col:
+        review = []
+        for word in row:
+            clean_word = re.sub(regex, ' ', word)
+            new_clean_word = clean_word.split()
+            for ncw in new_clean_word:
+                review.append(ncw)
+        new_reviews.append(review)
+
+    tupled_words = [tuple(word) for word in new_reviews]
+    return tupled_words
+
 def Emoji_Process(pkl_name):
     emoji_file = "./../emoji.xlsx"
     data = pd.read_excel(emoji_file)
     emoji_dict = data.set_index('emoji').T.to_dict('dict')
-    e_min = 10
-    e_max = 0
-    for key in emoji_dict.keys():
-        if len(key) < e_min:
-            e_min = len(key)
-        if len(key) > e_max:
-            e_max = len(key)
+    e_min, e_max = min_max_key_length(emoji_dict)
 
     df = Get_DF_from_PKL("00_clean_test.pkl")
-    # df = df.reindex(columns = ['ID', 'emoji', 'text'])
     emojis = []
 
+    # add attribute: emoji
     for row in df["text"]:
         found_emojis = []
         for word in row:
@@ -90,10 +115,10 @@ def Emoji_Process(pkl_name):
                         found_emojis.append((substr))
                         # print(word, substr)
         emojis.append(found_emojis)
-    # tupled_emojis = [tuple(em) for em in emojis]
+    # remove emojis and all emoji related characters from the reviews
+    text = clean_word(df["text"], '[^A-Za-z0-9!?/]')
 
     id = df["ID"]
-    text = df["text"]
     df_em = {
         'ID': id,
         'emoji': emojis,
@@ -101,9 +126,101 @@ def Emoji_Process(pkl_name):
     }
     df = pd.DataFrame(df_em)
 
-    DF_to_CSV(df,"01_emojis.csv")
+    DF_to_CSV(df, "01_emoji.csv")
+    DF_to_PKL(df, "01_emoji.pkl")
 
     return df
+
+
+def Rating_Process(pkl_name):
+    df = Get_DF_from_PKL(pkl_name)
+
+    ''' Number Ratings '''
+    # change #/# -> to a number i.e. 10/10 = 10
+    rating = []
+    for review in df["text"]:
+        found_rating = []
+        for word in review:
+            # do not check dates. i.e. 11/14/10
+            bl = word.split("/")
+            if "/10" in word and "/100" not in word and len(bl) == 2:
+                clean_rating = re.sub("/10", '', word)  # remove /10 part
+                clean_rating = re.sub("[^0-9]", '', clean_rating)  # remove 10/10service words trailed
+                found_rating.append(clean_rating)
+        rating.append(found_rating)
+
+    rated = clean_word(df["text"], '[^A-Za-z0-9!?]')
+
+    ''' Star Ratings '''
+    Numbers = ["zero", "one", "two", "three", "four", "five", "six", "seven",
+               "eight", "nine", "ten", "eleven"]
+    for i in range (111): # since people do not usually type fifty-stars but maybe 50 stars
+        Numbers.append(str(i))
+    number_dict = dict.fromkeys(Numbers, 0)
+    n_min, n_max = min_max_key_length(number_dict)
+
+    Stars = ["stars", "star"]
+    star_dict = dict.fromkeys(Stars, 0)
+    s_min, s_max = min_max_key_length(star_dict)
+
+    fixed_numbers = []
+
+    # combine numbers if consecutive. i.e [prev] 3, [curr] 5 -> then 3.5
+    for i in range(len(rated)):
+        fixed_rows = []
+        prev = rated[i][0]
+        for j in range(len(rated[i])):
+            if j > 0 and prev in number_dict and rated[i][j] in number_dict:
+                # remove the previous number and just use the current word as the new combined #
+                fixed_rows[j-1] = ''
+                fixed_rows.append(prev + "." + rated[i][j])
+            else:
+                fixed_rows.append(rated[i][j])
+            prev = rated[i][j]
+        fixed_numbers.append(fixed_rows)
+
+    star_reviews = []
+    for review in fixed_numbers:
+        found_star_reviews = []
+        prev = review[0][0]
+        for word in review:
+            curr_word_is_star = False
+            # look if the current word is "stars" or "star"
+            for s_size in range(s_min, s_max + 1):
+                for index in range(len(word) - s_min + 1):
+                    substar = word[index:index + s_size]
+                    if substar in star_dict:
+                        curr_word_is_star = True
+            # check if previous word is a #: i.e. [prev] 4, [curr] stars
+            prev_word_is_number = False
+            star_review = ''
+            if curr_word_is_star:
+                for n_size in range(n_min, n_max + 1):
+                    for n_index in range(len(prev) - n_min + 1):
+                        subnumber = prev[index:index + n_size]
+                        if subnumber in number_dict:
+                            prev_word_is_number = True
+                            star_review = subnumber
+            if prev_word_is_number:
+                found_star_reviews.append(subnumber)
+            prev = word
+        star_reviews.append(found_star_reviews)
+
+    text = clean_word(df["text"], '[^A-Za-z!?]')
+
+    id = df["ID"]
+    emojis =df["emoji"]
+    df_star = {
+        'ID': id,
+        'emoji' : emojis,
+        'rate'  : rating,
+        'star'  : star_reviews,
+        'text'  : text
+    }
+    df = pd.DataFrame(df_star)
+
+    DF_to_CSV(df, "02_rating.csv")
+    DF_to_PKL(df, "02_rating.pkl")
 
 
 
@@ -148,8 +265,11 @@ def main():
     # Get_Original_CSV("./../test2.csv", True) # outputs: 01_clean_test.csv, 01_clean_test.pkl
     ''' Comment-out above after use '''
 
-    """ 0.5. Test Data: Transform emojis to words"""
-    Emoji_Process("00_clean_test_stop_df.pkl")
+    """ 0.1 Test Data: Add attribute: Emojis"""
+    # Emoji_Process("00_clean_test_stop_df.pkl")
+
+    """ 0.2 Test Data: Add attribute: Star Reviews"""
+    Rating_Process("01_emoji.pkl")
 
     """ 1. Test Data: Removing Words with Basic Stop Word List """
     # Basic_Stop_Words("01_clean_test.pkl", True) # outputs: 02_clean_test_basic_stop.csv, 02_clean_test_basic_stop.pkl
