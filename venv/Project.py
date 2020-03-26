@@ -223,8 +223,6 @@ def Rating_Process(pkl_name):
     DF_to_PKL(df, "02_rating.pkl")
 
 
-
-
 def Basic_Stop_Words(pkl_name, *args):
     clean_df = Get_DF_from_PKL(pkl_name)
     m = preprocess(clean_df)
