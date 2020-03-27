@@ -4,15 +4,17 @@ Create clean, similarly organized data: translate all parts into single format
 Look at patterns of the test data set and find reoccurring features:
 
     1. Emojis: convert to text with emoji.csv
-        - find which emojis are even found in the test file: some are not found
+        - ✔ find which emojis are even found in the test file: some are not found
         - redo the .csv file to good and bad
     - remove quotes (high priority, after checking for emojis since some use quotes)
 
     2. Number Star Review: convert "4 stars", 'three stars' into a separate class: distinguishable
         i.e. 4 stars != very good; 4 stars = 'review=4' or 4stars (but this would be special case during the # removable phase)
         issue:
-            - 3 5 stars -> change to 3.5 stars
-            - 10/10 change to 10
+            - ✔ 3 5 stars -> change to 3.5 stars
+            - ✔ 10/10 change to 10
+            - added the # and 'stars' to stop words (or else double counted).
+            i.e remove instances of 3.5, 'star', 'stars' just for that review
     3. keep ! and ? next word but in the same order and only ?!: i.e. MATTER!!!!!!!!???????!!!!!!!! -> MATTER?!
         or separate ! and ? and keep all of them
         - count number of ! and ?

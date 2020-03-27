@@ -289,6 +289,52 @@ def Star_Review(pkl_name):
     DF_to_CSV(df, "03_star_review.csv")
     DF_to_PKL(df, "03_star_review.pkl")
 
+def Punctuation(pkl_name):
+    df = Get_DF_from_PKL(pkl_name)
+    num_em = []
+    num_qm = []
+    for review in df["text"]:
+        rev_em = 0
+        rev_qm = 0
+        for word in review:
+            for c in word:
+                if c == '!':
+                    rev_em = rev_em + 1
+                elif c == '?':
+                    rev_qm = rev_qm + 1
+        num_em.append(rev_em)
+        num_qm.append(rev_qm)
+
+    # remove ! and ? from the reviews
+    text = []
+    for review in df["text"]:
+        text_row = []
+        for word in review:
+            text_word = ""
+            nword = re.sub('[!?]', '', word)
+            for w in nword:
+                if len(w) > 0:
+                    text_word = text_word + w
+            if len(text_word) > 0:
+                text_row.append(text_word)
+        text.append(text_row)
+
+    df_punc = {
+        'ID': df['ID'],
+        'emoji': df['emoji'],
+        'rate': df['rate'],
+        'star': df['star'],
+        'num_em': num_em,
+        'num_qm': num_qm,
+        'text': text
+    }
+    df = pd.DataFrame(df_punc)
+
+    DF_to_CSV(df, "04_num_em_num_qm.csv")
+    DF_to_PKL(df, "04_num_em_num_qm.pkl")
+    return df
+
+
 def Basic_Stop_Words(pkl_name, *args):
     clean_df = Get_DF_from_PKL(pkl_name)
     m = preprocess(clean_df)
@@ -336,9 +382,7 @@ def main():
     # Star_Review("02_Rating.pkl")
 
     """ 0.4 Test Data: Add attribute: # of ! and # of ? """
-
-
-
+    Punctuation("03_star_review.pkl")
 
     """ 1. Test Data: Removing Words with Basic Stop Word List """
     # Basic_Stop_Words("01_clean_test.pkl", True) # outputs: 02_clean_test_basic_stop.csv, 02_clean_test_basic_stop.pkl
