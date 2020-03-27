@@ -16,7 +16,6 @@ def CSV_Reader(str, *args):
         w = text[i].split()
         words.append(w)
 
-
     tupled_words = [tuple(word) for word in words]
 
     id = data["ID"]
@@ -169,35 +168,55 @@ def Rating_Process(pkl_name):
     DF_to_PKL(df, "02_Rating.pkl")
     return df
 
-
 def Star_Review(pkl_name):
     df = Get_DF_from_PKL(pkl_name)
 
     ''' Separate Numbers and characters. i.e. 3stars = 3 stars '''
-    # for word in w:
-    #     alpha_num = re.split('(\d+)', word)
-    #     for a in alpha_num:
-    #         if len(a) > 0:
-    #             word_row.append(a)
-    # words.append(word_row)
+    text = []
+    for review in df["text"]:
+        words = []
+        for word in review:
+            alpha_num = re.findall('(\d+)(\w*)', word)
+            if len(alpha_num) > 0:
+                for w in alpha_num[0]:
+                    if len(w) > 0:
+                        words.append(w)
+            else:
+                words.append(word)
+        text.append(words)
 
-    rated = clean_word(df["text"], '[^A-Za-z0-9!?]')
+    ''' Separate Capital Letters and no spaces. i.e. starsEven'''
+    text_add_spaces = []
+    for review in text:
+        text_add = []
+        for word in review:
+            add_space = [0]
+            is_prev_char_lower = False
+            # find where to add spaces between words
+            for c_index in range(len(word)):
+                if word[c_index].isupper() and is_prev_char_lower:
+                    add_space.append(c_index)
+                if word[c_index].islower():
+                    is_prev_char_lower = True
+                else:
+                    is_prev_char_lower = False
+            add_space.append(len(word))
+            word_spaced = ''
 
-    ''' Star Ratings '''
-    # Numbers = ["zero", "one", "two", "three", "four", "five", "six", "seven",
-    #            "eight", "nine", "ten", "eleven"]
-    # for i in range (111): # since people do not usually type fifty-stars but maybe 50 stars
-    #     Numbers.append(str(i))
-    # number_dict = dict.fromkeys(Numbers, 0)
-    # n_min, n_max = min_max_key_length(number_dict)
-    #
-    # Stars = ["stars", "star", "Stars", "Star", "STARS", "STAR"]
-    # star_dict = dict.fromkeys(Stars, 0)
-    # s_min, s_max = min_max_key_length(star_dict)
-    #
-    # fixed_numbers = []
-    #
-    # # combine numbers if consecutive. i.e [prev] 3, [curr] 5 -> then 3.5
+            # Add spaces to the word
+            for i in range(1,len(add_space)):
+                word_spaced = word_spaced + word[add_space[i-1]:add_space[i]] + ' '
+
+            # finally resplit the word and add to final review
+            splits = word_spaced.split()
+            for w in splits:
+                text_add.append(w)
+        text_add_spaces.append(text_add)
+
+    # text_add_spaces is the new legit review matrix
+
+    ''' Combine consecutive numbers  i.e [prev] 3, [curr] 5 -> then 3.5'''
+
     # for i in range(len(rated)):
     #     fixed_rows = []
     #     prev = ''
@@ -220,6 +239,44 @@ def Star_Review(pkl_name):
     #         if len(word) > 0:
     #             text_row.append(word)
     #     text.append(text_row)
+
+
+
+
+
+
+    tupled_words = [tuple(word) for word in text_add_spaces]
+
+    df_rate = {
+        'ID': df["ID"],
+        'emoji': df["emoji"],
+        'rate': df["rate"],
+        'text': tupled_words
+    }
+    df = pd.DataFrame(df_rate)
+
+    DF_to_CSV(df, "0301_Star_Review.csv")
+
+
+
+
+
+
+
+
+    ''' Star Ratings '''
+    # Numbers = ["zero", "one", "two", "three", "four", "five", "six", "seven",
+    #            "eight", "nine", "ten", "eleven"]
+    # for i in range (111): # since people do not usually type fifty-stars but maybe 50 stars
+    #     Numbers.append(str(i))
+    # number_dict = dict.fromkeys(Numbers, 0)
+    # n_min, n_max = min_max_key_length(number_dict)
+    #
+    # Stars = ["stars", "star", "Stars", "Star", "STARS", "STAR"]
+    # star_dict = dict.fromkeys(Stars, 0)
+    # s_min, s_max = min_max_key_length(star_dict)
+    #
+
     #
     # star_reviews = []
     # for review in text:
@@ -305,9 +362,10 @@ def main():
     # Emoji_Process("00_clean_test_stop_df.pkl")
 
     """ 0.2 Test Data: Add attribute: Rating out of 10 """
-    Rating_Process("01_emoji.pkl")
+    # Rating_Process("01_emoji.pkl")
 
     """ 0.3 Test Data: Add attribute: Star Reviews"""
+    Star_Review("02_Rating.pkl")
 
     """ 0.4 Test Data: Add attribute: # of ! and # of ? """
 
