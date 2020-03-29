@@ -345,7 +345,7 @@ def Capitialized(pkl_name):
         caps.append(caps_review)
 
     df_cap = {
-        'id': df['ID'],
+        'ID': df['ID'],
         'emoji': df['emoji'],
         'rate': df['rate'],
         'star': df['star'],
@@ -361,22 +361,73 @@ def Capitialized(pkl_name):
 
     return df_new
 
-def Basic_Stop_Words(pkl_name, *args):
-    clean_df = Get_DF_from_PKL(pkl_name)
+def file_lookup(file_name):
+    t = set()
+    with open(file_name) as f:
+        next(f)
+        for line in f:
+            if not line.startswith(';') and not line.startswith('\n'):
+                word =re.sub('\n', '', line)
+                t.add(word)
+    return t
+
+def Sentiment(pkl_name):
+    df = Get_DF_from_PKL(pkl_name)
+
+    ''' add each file into its own hashset for faster lookup '''
+    positive_words = file_lookup("../positive-negative-words/positive-words.txt")
+    negative_words = file_lookup("../positive-negative-words/negative-words.txt")
+
+    pos = []
+    neg = []
+
+    for review in df['text']:
+        pn = 0
+        nn = 0
+        for word in review:
+            if word in positive_words:
+                pn = pn + 1
+            if word in negative_words:
+                nn = nn + 1
+        pos.append(pn)
+        neg.append(nn)
+
+    df_sent = {
+        'ID': df['ID'],
+        'emoji': df['emoji'],
+        'rate': df['rate'],
+        'star': df['star'],
+        'num_em': df['num_em'],
+        'num_qm': df['num_qm'],
+        'caps': df['caps'],
+        'pos': pos,
+        'neg': neg,
+        'text': df['text']
+    }
+    df_new = pd.DataFrame(df_sent)
+
+    DF_to_PKL(df_new, "06_sentiment.pkl")
+    DF_to_CSV(df_new, "06_sentiment.csv")
+
+
+
+
+def basic_stop_words(pkl_name, *args):
+    clean_df = get_df_from_pkl(pkl_name)
     m = preprocess(clean_df)
     if len(args) >= 1:
-        stop_df = m.removeStopWords("./../stop_words.lst", args[0])
+        stop_df = m.removestopwords("./../stop_words.lst", args[0])
     else:
-        stop_df = m.removeStopWords("./../stop_words.lst")
+        stop_df = m.removestopwords("./../stop_words.lst")
 
     f_name = "02_test_basic_stop" if len(args) >= 1 else "02_train_basic_stop"
-    DF_to_PKL(stop_df, f_name + ".pkl")
-    DF_to_CSV(stop_df, f_name + ".csv")
+    df_to_pkl(stop_df, f_name + ".pkl")
+    df_to_csv(stop_df, f_name + ".csv")
 
-def Remove_Infrequent_Words(freq, pkl_name):
-    basic_stop_df = Get_DF_from_PKL(pkl_name)
+def remove_infrequent_words(freq, pkl_name):
+    basic_stop_df = get_df_from_pkl(pkl_name)
     s = stats(basic_stop_df)
-    old_dict = s.getDictionary() # returns dictionary
+    old_dict = s.getdictionary() # returns dictionary
 
     new_dict = {key: value for key, value in old_dict.items() if value <= freq }
 
@@ -386,11 +437,13 @@ def Remove_Infrequent_Words(freq, pkl_name):
         og_stop_file.write(word + '\n')
 
     m = preprocess(basic_stop_df)
-    stop_df = m.removeWithDict(new_dict)
+    stop_df = m.removewithdict(new_dict)
     full_name = re.split(r"\.", pkl_name)
     f_name =    full_name[0] + "_rem_freq" + str(freq)
-    DF_to_PKL(stop_df, f_name+".pkl")
-    DF_to_CSV(stop_df, f_name+".csv")
+    df_to_pkl(stop_df, f_name+".pkl")
+    df_to_csv(stop_df, f_name+".csv")
+
+
 
 def main():
     ''' Data Preprocessing Pipeline '''
@@ -412,6 +465,9 @@ def main():
 
     """ 0.5 Test Data: Add attribute: # of capitalized words """
     Capitialized("04_punctuation.pkl")
+
+    """ 0.6 Test Data: Add attributs: # of positive words and # of negative words"""
+    Sentiment("05_capitalized.pkl")
 
     """ 1. Test Data: Removing Words with Basic Stop Word List """
     # Basic_Stop_Words("01_clean_test.pkl", True) # outputs: 02_clean_test_basic_stop.csv, 02_clean_test_basic_stop.pkl
