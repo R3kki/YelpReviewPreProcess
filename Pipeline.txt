@@ -15,7 +15,8 @@ Look at patterns of the test data set and find reoccurring features:
             - ✔ 10/10 change to 10
             - added the # and 'stars' to stop words (or else double counted).
             i.e remove instances of 3.5, 'star', 'stars' just for that review
-    3. keep ! and ? next word but in the same order and only ?!: i.e. MATTER!!!!!!!!???????!!!!!!!! -> MATTER?!
+            -- words: stars, star kept for now
+    3. ✔ keep ! and ? next word but in the same order and only ?!: i.e. MATTER!!!!!!!!???????!!!!!!!! -> MATTER?!
         or separate ! and ? and keep all of them
         - count number of ! and ?
 
@@ -29,9 +30,14 @@ Look at patterns of the test data set and find reoccurring features:
     - 'OMGGGGG' -> OMG
     - 'sooooo' -> so
 
-    5.Count number of positive words and neg words in each review.
+    5.✔ Count number of positive words and neg words in each review.
         - match pos and neg words from each review w given neg and pos words dataset.
        
+
+    Basic Stop Words, filtering:
+
+    1. use stop list given
+    2. filter by frequency and only keep the top X number of words
 
 
 

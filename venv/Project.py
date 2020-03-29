@@ -111,7 +111,7 @@ def Emoji_Process(pkl_name):
                         # print(word, substr)
         emojis.append(found_emojis)
     # remove emojis and all emoji related characters from the reviews
-    text = clean_word(df["text"], '[^A-Za-z0-9!?/$.]')
+    text = clean_word(df["text"], '[^A-Za-z0-9!?/$.+-]')
 
     id = df["ID"]
     df_em = {
@@ -412,37 +412,37 @@ def Sentiment(pkl_name):
 
 
 
-def basic_stop_words(pkl_name, *args):
-    clean_df = get_df_from_pkl(pkl_name)
+def Basic_Stop_Words(pkl_name):
+    clean_df = Get_DF_from_PKL(pkl_name)
     m = preprocess(clean_df)
-    if len(args) >= 1:
-        stop_df = m.removestopwords("./../stop_words.lst", args[0])
-    else:
-        stop_df = m.removestopwords("./../stop_words.lst")
+    m.casingNumbers()
+    m.removeStopWords("./../stop_words.lst")
 
-    f_name = "02_test_basic_stop" if len(args) >= 1 else "02_train_basic_stop"
-    df_to_pkl(stop_df, f_name + ".pkl")
-    df_to_csv(stop_df, f_name + ".csv")
+    stop_df = m.getDF()
+    f_name = "10_test_basic_stop"
+    DF_to_PKL(stop_df, f_name + ".pkl")
+    DF_to_CSV(stop_df, f_name + ".csv")
 
-def remove_infrequent_words(freq, pkl_name):
-    basic_stop_df = get_df_from_pkl(pkl_name)
+def Remove_Infrequent_Words(freq, pkl_name):
+    basic_stop_df = Get_DF_from_PKL(pkl_name)
     s = stats(basic_stop_df)
-    old_dict = s.getdictionary() # returns dictionary
+    old_dict = s.getDictionary() # returns dictionary
 
     new_dict = {key: value for key, value in old_dict.items() if value <= freq }
 
     ''' create a new file for the stop words and only run on those words '''
-    og_stop_file = open("./../stop_words_"+freq+".lst", "w+")
+    new_fname ="./../stop_words_"+str(freq)+".lst"
+    og_stop_file = open(new_fname, "w+")
     for word in new_dict:
         og_stop_file.write(word + '\n')
 
     m = preprocess(basic_stop_df)
-    stop_df = m.removewithdict(new_dict)
+    m.removeWithDict(new_dict)
+    stop_df = m.getDF()
     full_name = re.split(r"\.", pkl_name)
     f_name =    full_name[0] + "_rem_freq" + str(freq)
-    df_to_pkl(stop_df, f_name+".pkl")
-    df_to_csv(stop_df, f_name+".csv")
-
+    DF_to_PKL(stop_df, f_name+".pkl")
+    DF_to_CSV(stop_df, f_name+".csv")
 
 
 def main():
@@ -464,16 +464,15 @@ def main():
     # Punctuation("03_star_review.pkl")
 
     """ 0.5 Test Data: Add attribute: # of capitalized words """
-    Capitialized("04_punctuation.pkl")
+    # Capitialized("04_punctuation.pkl")
 
     """ 0.6 Test Data: Add attributs: # of positive words and # of negative words"""
-    Sentiment("05_capitalized.pkl")
+    # Sentiment("05_capitalized.pkl")
 
     """ 1. Test Data: Removing Words with Basic Stop Word List """
-    # Basic_Stop_Words("01_clean_test.pkl", True) # outputs: 02_clean_test_basic_stop.csv, 02_clean_test_basic_stop.pkl
+    # Basic_Stop_Words("06_sentiment.pkl")
 
     """ 2. Test Data: Remove words with frequency less than 10  """
-    # Remove_Infrequent_Words(10, "02_stop_df.pkl") # outputs: 02_stop_df_rem_freq_10.csv, 02_stop_df_df_rem_freq_10.pkl
-    ''' Comment-out above after use '''
+    Remove_Infrequent_Words(10, "10_test_basic_stop.pkl")
 
 main()
