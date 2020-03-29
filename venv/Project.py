@@ -330,10 +330,36 @@ def Punctuation(pkl_name):
     }
     df = pd.DataFrame(df_punc)
 
-    DF_to_CSV(df, "04_num_em_num_qm.csv")
-    DF_to_PKL(df, "04_num_em_num_qm.pkl")
+    DF_to_CSV(df, "04_punctuation.csv")
+    DF_to_PKL(df, "04_punctuation.pkl")
     return df
 
+def Capitialized(pkl_name):
+    df = Get_DF_from_PKL(pkl_name)
+    caps = []
+    for review in df["text"]:
+        caps_review = 0
+        for word in review:
+            if (word.isupper() and len(word) > 1):
+                caps_review = caps_review + 1
+        caps.append(caps_review)
+
+    df_cap = {
+        'id': df['ID'],
+        'emoji': df['emoji'],
+        'rate': df['rate'],
+        'star': df['star'],
+        'num_em': df['num_em'],
+        'num_qm': df['num_qm'],
+        'caps': caps,
+        'text': df['text']
+    }
+    df_new = pd.DataFrame(df_cap)
+
+    DF_to_PKL(df_new, "05_capitalized.pkl")
+    DF_to_CSV(df_new, "05_capitalized.csv")
+
+    return df_new
 
 def Basic_Stop_Words(pkl_name, *args):
     clean_df = Get_DF_from_PKL(pkl_name)
@@ -382,7 +408,10 @@ def main():
     # Star_Review("02_Rating.pkl")
 
     """ 0.4 Test Data: Add attribute: # of ! and # of ? """
-    Punctuation("03_star_review.pkl")
+    # Punctuation("03_star_review.pkl")
+
+    """ 0.5 Test Data: Add attribute: # of capitalized words """
+    Capitialized("04_punctuation.pkl")
 
     """ 1. Test Data: Removing Words with Basic Stop Word List """
     # Basic_Stop_Words("01_clean_test.pkl", True) # outputs: 02_clean_test_basic_stop.csv, 02_clean_test_basic_stop.pkl

@@ -22,7 +22,7 @@ Look at patterns of the test data set and find reoccurring features:
     4. (maybe not) keep capitals (unless training data doesnt have as much)
     - find number of all capitalized words
 
-    5. Misspelt word count?
+    5. Not implemented: Misspelt word count?
     - keep misspellings and then count number of words that are misspelt then change them into real words
     - 'aaaaaaa' -> a
     - 'Goood' -> good
