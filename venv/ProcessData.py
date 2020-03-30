@@ -1,16 +1,18 @@
 ''' Different Preprocessing Methods given a dataframe object'''
 import pandas as pd
+import re
 class ProcessData:
     def __init__(self, data):
         self.data = data
 
-    def removeWithDict(self, dict, *args):
+    def getDF(self):
+        return self.data
+
+    def removeWithDict(self, dict):
         ''' uses a dictionary to remove words '''
         words = []
 
-        id = self.data["ID"]
-        if len(args) < 1: label = data["class"]
-        text = self.data["words"]
+        text = self.data["text"]
         for i in range(len(text)):
             text_row = []
             for j in range(len(text[i])):
@@ -21,28 +23,29 @@ class ProcessData:
 
         tupled_words = [tuple(word) for word in words]
 
-        if len(args) < 1: # training data
-            df_sw = {
-                'ID': id,
-                'class': label,
-                'words': tupled_words
-            }
-        else: # test data
-            df_sw = {
-                'ID': id,
-                'words': tupled_words
-            }
-        df = pd.DataFrame(df_sw)
+        self.data["text"] = tupled_words
 
-        return df
+    def casingNumbers(self):
+        text = self.data["text"]
+        words = []
+        for review in text:
+            word_row = []
+            for word in review:
+                new_word = re.sub('[^A-Za-z]', '', word)
 
-    def removeStopWords(self, stop_file, *args):
+                if len(new_word)>0:
+                    word_row.append(new_word.lower()) # change everything to lower case
+            words.append(word_row)
+
+        self.data["text"] = words
+
+
+    def removeStopWords(self, stop_file):
         ''' Returns df object with removed words from stop list file'''
         stop_words = [line.rstrip('\n') for line in open(stop_file)]
 
-        id = self.data["ID"]
-        if len(args) < 1: label = self.data["class"]
-        text = self.data["words"]
+
+        text = self.data["text"]
 
         words = []
         for i in range(len(text)):
@@ -52,24 +55,14 @@ class ProcessData:
                 w = text[i][j]
                 if w not in stop_words:
                     text_row.append(w)
+
             words.append(text_row)
 
         tupled_words = [tuple(word) for word in words]
 
-        if len(args) < 1:  # training data
-            df_sw = {
-                'ID': id,
-                'class': label,
-                'words': tupled_words
-            }
-        else:  # test data
-            df_sw = {
-                'ID': id,
-                'words': tupled_words
-            }
-        df = pd.DataFrame(df_sw)
+        self.data["text"] = tupled_words
 
-        return df
+
 
     def doStemming(self, word):
         ''' Preform Porter Stemming Algorithm on the word

@@ -4,16 +4,15 @@ import operator
 from ProcessData import ProcessData as process
 
 class WordStats:
-    def __init__(self, data, *args):
+    def __init__(self, data):
         self.data = data
         self.dict = {}
 
         obj = process(data)
 
         ''' create dictionary '''
-        id = self.data["ID"]
-        if len(args) < 1: label = data["class"]
-        text = self.data["words"]
+
+        text = self.data["text"]
 
         words = []
         for i in range(len(text)):
