@@ -21,8 +21,9 @@ class ProcessData:
                     text_row.append(w)
             words.append(text_row)
 
-        # tupled_words = [tuple(word) for word in words]
-        self.data["text"] = words
+        tupled_words = [tuple(word) for word in words]
+
+        self.data["text"] = tupled_words
 
     def casingNumbers(self):
         text = self.data["text"]

@@ -89,7 +89,7 @@ def clean_word(df_col, regex):
     return tupled_words
 
 def Emoji_Process(pkl_name):
-    emoji_file = "./../emoji.xlsx"
+    emoji_file = "./../emoji2.xlsx"
     data = pd.read_excel(emoji_file)
     emoji_dict = data.set_index('emoji').T.to_dict('dict')
     e_min, e_max = min_max_key_length(emoji_dict)
@@ -113,28 +113,14 @@ def Emoji_Process(pkl_name):
     # remove emojis and all emoji related characters from the reviews
     text = clean_word(df["text"], '[^A-Za-z0-9!?/+-]')
 
-    ''' take most common emoji '''
+    ''' convert emoji into a score and take the score sum of all emojis found in that review '''
     emoji = []
     for row in emojis:
-        row_dict = {}
+        score = 0
         for e in row:
-            if e not in row_dict:
-                row_dict[e] = 1
-            else:
-                count = row_dict[e]
-                row_dict[e] = count + 1
-
-        ''' find the max '''
-        max = 0
-        result_emoji = ''
-        for r in row_dict:
-            if row_dict[r] > max:
-                max = row_dict[r]
-                result_emoji = r
-        if max >0:
-            emoji.append(result_emoji)
-        else:
-            emoji.append('?')
+            if e in emoji_dict:
+                score = score + float(emoji_dict[e]['score'])
+        emoji.append(score)
 
     df["text"] = text
     df["emoji"] =  emoji
@@ -474,7 +460,7 @@ def main():
     # Get_Original_CSV("./../test2.csv", True) # outputs: 01_clean_test.csv, 01_clean_test.pkl
 
     """ 0.1 Test Data: Add attribute: Emojis """
-    # Emoji_Process("00_clean_test_stop_df.pkl")
+    # Emoji_Process("00_clean_test.pkl")
 
     """ 0.2 Test Data: Add attribute: Rating out of 10 """
     # Rating_Process("01_emoji.pkl")
@@ -486,7 +472,7 @@ def main():
     # Punctuation("03_star_review.pkl")
 
     """ 0.5 Test Data: Add attribute: # of capitalized words """
-    # Capitialized("04_punctuation.pkl")
+    # Capitialized("04_punctuation.pkl/")
 
     """ 0.6 Test Data: Add attributs: # of positive words and # of negative words"""
     # Sentiment("05_capitalized.pkl")
@@ -507,25 +493,24 @@ def main():
     Emoji_Process("00_clean_train.pkl")
 
     """ 0.2 Test Data: Add attribute: Rating out of 10 """
-    Rating_Process("01_emoji.pkl")
+    # Rating_Process("01_emoji.pkl")
 
     """ 0.3 Test Data: Add attribute: Star Reviews"""
-    Star_Review("02_Rating.pkl")
+    # Star_Review("02_Rating.pkl")
 
     """ 0.4 Test Data: Add attribute: # of ! and # of ? """
-    Punctuation("03_star_review.pkl")
+    # Punctuation("03_star_review.pkl")
 
     """ 0.5 Test Data: Add attribute: # of capitalized words """
-    Capitialized("04_punctuation.pkl")
+    # Capitialized("04_punctuation.pkl")
 
     """ 0.6 Test Data: Add attributs: # of positive words and # of negative words"""
-    Sentiment("05_capitalized.pkl")
+    # Sentiment("05_capitalized.pkl")
 
     """ 1. Test Data: Removing Words with Basic Stop Word List """
-    Basic_Stop_Words("06_sentiment.pkl")
+    # Basic_Stop_Words("06_sentiment.pkl")
 
-    """ 2. Test Data: Remove words with frequency less than 10  """
-    Remove_Infrequent_Words(10, "10_train_basic_stop.pkl")
+
 
 
 main()
