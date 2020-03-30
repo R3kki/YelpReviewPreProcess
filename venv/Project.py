@@ -443,12 +443,13 @@ def main():
         For all the methods that are of 0.# add additional argument "True" if you want csv to be outputted as well
         By default no CSV is outputted 
     '''
-    datatype = "train"      # CHANGE TO TEST OR TRAIN
+    datatype = "test"      # CHANGE TO TEST OR TRAIN
     ''' 0. Training Data: to DF from CSV '''
-    Get_Original_CSV("./../train2.csv", datatype) # filename here
+    # Get_Original_CSV("./../train2.csv", datatype) # filename here
+    Get_Original_CSV("./../test2.csv", datatype)  # filename here
 
     """ 0.1 Test Data: Add attribute: Emojis """
-    Emoji_Process("00_clean_train.pkl")
+    Emoji_Process("00_clean_"+datatype+".pkl")
 
     """ 0.2 Test Data: Add attribute: Rating out of 10 """
     Rating_Process("01_emoji.pkl")
