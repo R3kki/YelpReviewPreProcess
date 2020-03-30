@@ -94,7 +94,7 @@ def Emoji_Process(pkl_name):
     emoji_dict = data.set_index('emoji').T.to_dict('dict')
     e_min, e_max = min_max_key_length(emoji_dict)
 
-    df = Get_DF_from_PKL("00_clean_test.pkl")
+    df = Get_DF_from_PKL(pkl_name)
     emojis = []
 
     # add attribute: emoji
@@ -111,15 +111,33 @@ def Emoji_Process(pkl_name):
                         # print(word, substr)
         emojis.append(found_emojis)
     # remove emojis and all emoji related characters from the reviews
-    text = clean_word(df["text"], '[^A-Za-z0-9!?/$.+-]')
+    text = clean_word(df["text"], '[^A-Za-z0-9!?/+-]')
 
-    id = df["ID"]
-    df_em = {
-        'ID': id,
-        'emoji': emojis,
-        'text': text
-    }
-    df = pd.DataFrame(df_em)
+    ''' take most common emoji '''
+    emoji = []
+    for row in emojis:
+        row_dict = {}
+        for e in row:
+            if e not in row_dict:
+                row_dict[e] = 1
+            else:
+                count = row_dict[e]
+                row_dict[e] = count + 1
+
+        ''' find the max '''
+        max = 0
+        result_emoji = ''
+        for r in row_dict:
+            if row_dict[r] > max:
+                max = row_dict[r]
+                result_emoji = r
+        if max >0:
+            emoji.append(result_emoji)
+        else:
+            emoji.append('?')
+
+    df["text"] = text
+    df["emoji"] =  emoji
 
     DF_to_CSV(df, "01_emoji.csv")
     DF_to_PKL(df, "01_emoji.pkl")
@@ -143,6 +161,19 @@ def Rating_Process(pkl_name):
                 found_rating.append(clean_rating)
         rating.append(found_rating)
 
+    ''' Put Average rating into the file. ? if no rating '''
+    rate = []
+    for review in rating:
+        sum = -1
+        for i in review:
+            sum =  sum + float(i)
+        if (sum == -1):
+            rate.append('?')
+        else:
+            rate.append(sum/len(review))
+
+
+
     ''' Remove all dates and ratings from the data set'''
     text = []
     for review in df["text"]:
@@ -152,17 +183,10 @@ def Rating_Process(pkl_name):
                 words.append(word)
         text.append(words)
 
-    tupled_words = [tuple(word) for word in text]
+    df['text'] = text
+    df['rate'] = rate
 
-    id = df["ID"]
-    emojis =df["emoji"]
-    df_rate = {
-        'ID': id,
-        'emoji' : emojis,
-        'rate'  : rating,
-        'text'  : tupled_words
-    }
-    df = pd.DataFrame(df_rate)
+
 
     DF_to_CSV(df, "02_rating.csv")
     DF_to_PKL(df, "02_rating.pkl")
@@ -275,16 +299,23 @@ def Star_Review(pkl_name):
             prev = word
         star_reviews.append(found_star_reviews)
 
-    tupled_words = [tuple(word) for word in text]
+    ''' Put Average stars into the file. ? if no rating '''
+    avg_star = []
+    for review in star_reviews:
+        sum = -1
+        for i in review:
+            sum = sum + float(i)
+        if (sum == -1):
+            avg_star.append('?')
+        else:
+            avg_star.append(sum / len(review))
 
-    df_star = {
-        'ID': df["ID"],
-        'emoji': df["emoji"],
-        'rate': df["rate"],
-        'star': star_reviews,
-        'text': tupled_words
-    }
-    df = pd.DataFrame(df_star)
+
+
+    df['text'] = text
+    df['star'] = avg_star
+
+
 
     DF_to_CSV(df, "03_star_review.csv")
     DF_to_PKL(df, "03_star_review.pkl")
@@ -302,8 +333,14 @@ def Punctuation(pkl_name):
                     rev_em = rev_em + 1
                 elif c == '?':
                     rev_qm = rev_qm + 1
-        num_em.append(rev_em)
-        num_qm.append(rev_qm)
+        if rev_em == 0:
+            num_em.append('?')
+        else:
+            num_em.append(rev_em)
+        if rev_qm == 0:
+            num_qm.append('?')
+        else:
+            num_qm.append(rev_qm)
 
     # remove ! and ? from the reviews
     text = []
@@ -311,7 +348,7 @@ def Punctuation(pkl_name):
         text_row = []
         for word in review:
             text_word = ""
-            nword = re.sub('[!?]', '', word)
+            nword = re.sub('[!?]', ' ', word)
             for w in nword:
                 if len(w) > 0:
                     text_word = text_word + w
@@ -319,16 +356,10 @@ def Punctuation(pkl_name):
                 text_row.append(text_word)
         text.append(text_row)
 
-    df_punc = {
-        'ID': df['ID'],
-        'emoji': df['emoji'],
-        'rate': df['rate'],
-        'star': df['star'],
-        'num_em': num_em,
-        'num_qm': num_qm,
-        'text': text
-    }
-    df = pd.DataFrame(df_punc)
+    df['text'] = text
+    df['num_em'] = num_em
+    df['num_qm'] = num_qm
+
 
     DF_to_CSV(df, "04_punctuation.csv")
     DF_to_PKL(df, "04_punctuation.pkl")
@@ -342,24 +373,20 @@ def Capitialized(pkl_name):
         for word in review:
             if (word.isupper() and len(word) > 1):
                 caps_review = caps_review + 1
-        caps.append(caps_review)
 
-    df_cap = {
-        'ID': df['ID'],
-        'emoji': df['emoji'],
-        'rate': df['rate'],
-        'star': df['star'],
-        'num_em': df['num_em'],
-        'num_qm': df['num_qm'],
-        'caps': caps,
-        'text': df['text']
-    }
-    df_new = pd.DataFrame(df_cap)
+        if caps_review == 0:
+            caps.append('?')
+        else:
+            caps.append(caps_review)
 
-    DF_to_PKL(df_new, "05_capitalized.pkl")
-    DF_to_CSV(df_new, "05_capitalized.csv")
+    df['caps'] = caps
 
-    return df_new
+
+
+    DF_to_PKL(df, "05_capitalized.pkl")
+    DF_to_CSV(df, "05_capitalized.csv")
+
+    return df
 
 def file_lookup(file_name):
     t = set()
@@ -389,28 +416,23 @@ def Sentiment(pkl_name):
                 pn = pn + 1
             if word in negative_words:
                 nn = nn + 1
-        pos.append(pn)
-        neg.append(nn)
+        if pn == 0:
+            pos.append('?')
+        else:
+            pos.append(pn)
+        if nn == 0:
+            neg.append('?')
+        else:
+            neg.append(nn)
 
-    df_sent = {
-        'ID': df['ID'],
-        'emoji': df['emoji'],
-        'rate': df['rate'],
-        'star': df['star'],
-        'num_em': df['num_em'],
-        'num_qm': df['num_qm'],
-        'caps': df['caps'],
-        'pos': pos,
-        'neg': neg,
-        'text': df['text']
-    }
-    df_new = pd.DataFrame(df_sent)
-
-    DF_to_PKL(df_new, "06_sentiment.pkl")
-    DF_to_CSV(df_new, "06_sentiment.csv")
+    df['positive_words'] = pos
+    df['negative_words'] = neg
 
 
 
+    DF_to_PKL(df, "06_sentiment.pkl")
+    DF_to_CSV(df, "06_sentiment.csv")
+    return df
 
 def Basic_Stop_Words(pkl_name):
     clean_df = Get_DF_from_PKL(pkl_name)
@@ -473,6 +495,37 @@ def main():
     # Basic_Stop_Words("06_sentiment.pkl")
 
     """ 2. Test Data: Remove words with frequency less than 10  """
-    Remove_Infrequent_Words(10, "10_test_basic_stop.pkl")
+    # Remove_Infrequent_Words(10, "10_test_basic_stop.pkl")
+
+
+    '''------------------------------ Training Data below -----------------------------'''
+
+    ''' 0. Training Data: to DF from CSV '''
+    Get_Original_CSV("./../train2.csv")
+
+    """ 0.1 Test Data: Add attribute: Emojis """
+    Emoji_Process("00_clean_train.pkl")
+
+    """ 0.2 Test Data: Add attribute: Rating out of 10 """
+    Rating_Process("01_emoji.pkl")
+
+    """ 0.3 Test Data: Add attribute: Star Reviews"""
+    Star_Review("02_Rating.pkl")
+
+    """ 0.4 Test Data: Add attribute: # of ! and # of ? """
+    Punctuation("03_star_review.pkl")
+
+    """ 0.5 Test Data: Add attribute: # of capitalized words """
+    Capitialized("04_punctuation.pkl")
+
+    """ 0.6 Test Data: Add attributs: # of positive words and # of negative words"""
+    Sentiment("05_capitalized.pkl")
+
+    """ 1. Test Data: Removing Words with Basic Stop Word List """
+    Basic_Stop_Words("06_sentiment.pkl")
+
+    """ 2. Test Data: Remove words with frequency less than 10  """
+    Remove_Infrequent_Words(10, "10_train_basic_stop.pkl")
+
 
 main()
