@@ -5,7 +5,7 @@ import xlrd
 from ProcessData import ProcessData as preprocess
 from WordStats import WordStats as stats
 
-def CSV_Reader(str, *args):
+def CSV_Reader(str):
     ''' Reads CSV and returns a pandas dataframe object '''
     data = pd.read_csv(str)
     text = data["text"]
@@ -18,23 +18,9 @@ def CSV_Reader(str, *args):
 
     tupled_words = [tuple(word) for word in words]
 
-    id = data["ID"]
-    if len(args) < 1:   # training data
-        label = data["class"]
-        df = {
-            'ID': id,
-            'class': label,
-            'text': tupled_words
-        }
-    else:               # test data
-        df = {
-            'ID': id,
-            'text': tupled_words
-        }
+    data["text"] = words
 
-    df = pd.DataFrame(df)
-
-    return df
+    return data
 
 def DF_to_CSV(df, new_name):
     ''' Run Once: get the cleaned data into a csv file '''
@@ -53,15 +39,11 @@ def Get_DF_from_PKL(new_name):
     train_data = pickle.load(open(pkl_name, "rb"))
     return train_data
 
-def Get_Original_CSV(file_name, *args):
+def Get_Original_CSV(file_name, tdata, *args):
+    df = CSV_Reader(file_name)
     if len(args) >= 1:
-        df = CSV_Reader(file_name, True)        # test data with no class label
-        DF_to_CSV(df, "00_clean_test.csv")
-        DF_to_PKL(df, "00_clean_test.pkl")
-    else:
-        df = CSV_Reader(file_name)              # training data with class label
-        DF_to_CSV(df, "00_clean_train.csv")
-        DF_to_PKL(df, "00_clean_train.pkl")
+        DF_to_CSV(df, "00_clean_"+tdata+".csv")
+    DF_to_PKL(df, "00_clean_"+tdata+".pkl")
 
 def min_max_key_length(dict):
     min = 10000000
@@ -88,7 +70,7 @@ def clean_word(df_col, regex):
     tupled_words = [tuple(word) for word in new_reviews]
     return tupled_words
 
-def Emoji_Process(pkl_name):
+def Emoji_Process(pkl_name, *args):
     emoji_file = "./../emoji2.xlsx"
     data = pd.read_excel(emoji_file)
     emoji_dict = data.set_index('emoji').T.to_dict('dict')
@@ -125,12 +107,13 @@ def Emoji_Process(pkl_name):
     df["text"] = text
     df["emoji"] =  emoji
 
-    DF_to_CSV(df, "01_emoji.csv")
+    if len(args) >= 1:
+        DF_to_CSV(df, "01_emoji.csv")
     DF_to_PKL(df, "01_emoji.pkl")
 
     return df
 
-def Rating_Process(pkl_name):
+def Rating_Process(pkl_name, *args):
     df = Get_DF_from_PKL(pkl_name)
 
     ''' Number Ratings '''
@@ -158,8 +141,6 @@ def Rating_Process(pkl_name):
         else:
             rate.append(sum/len(review))
 
-
-
     ''' Remove all dates and ratings from the data set'''
     text = []
     for review in df["text"]:
@@ -172,9 +153,8 @@ def Rating_Process(pkl_name):
     df['text'] = text
     df['rate'] = rate
 
-
-
-    DF_to_CSV(df, "02_rating.csv")
+    if len(args) >= 1:
+        DF_to_CSV(df, "02_rating.csv")
     DF_to_PKL(df, "02_rating.pkl")
     return df
 
@@ -185,7 +165,7 @@ def is_number(s):
     except ValueError:
         return False
 
-def Star_Review(pkl_name):
+def Star_Review(pkl_name, *args):
     df = Get_DF_from_PKL(pkl_name)
 
     ''' Separate Numbers and characters. i.e. 3stars = 3 stars '''
@@ -301,12 +281,11 @@ def Star_Review(pkl_name):
     df['text'] = text
     df['star'] = avg_star
 
-
-
-    DF_to_CSV(df, "03_star_review.csv")
+    if len(args) >= 1:
+        DF_to_CSV(df, "03_star_review.csv")
     DF_to_PKL(df, "03_star_review.pkl")
 
-def Punctuation(pkl_name):
+def Punctuation(pkl_name, *args):
     df = Get_DF_from_PKL(pkl_name)
     num_em = []
     num_qm = []
@@ -346,12 +325,12 @@ def Punctuation(pkl_name):
     df['num_em'] = num_em
     df['num_qm'] = num_qm
 
-
-    DF_to_CSV(df, "04_punctuation.csv")
+    if len(args) >= 1:
+        DF_to_CSV(df, "04_punctuation.csv")
     DF_to_PKL(df, "04_punctuation.pkl")
     return df
 
-def Capitialized(pkl_name):
+def Capitialized(pkl_name, *args):
     df = Get_DF_from_PKL(pkl_name)
     caps = []
     for review in df["text"]:
@@ -367,10 +346,9 @@ def Capitialized(pkl_name):
 
     df['caps'] = caps
 
-
-
+    if len(args) >= 1:
+        DF_to_CSV(df, "05_capitalized.csv")
     DF_to_PKL(df, "05_capitalized.pkl")
-    DF_to_CSV(df, "05_capitalized.csv")
 
     return df
 
@@ -384,7 +362,7 @@ def file_lookup(file_name):
                 t.add(word)
     return t
 
-def Sentiment(pkl_name):
+def Sentiment(pkl_name, *args):
     df = Get_DF_from_PKL(pkl_name)
 
     ''' add each file into its own hashset for faster lookup '''
@@ -414,24 +392,27 @@ def Sentiment(pkl_name):
     df['positive_words'] = pos
     df['negative_words'] = neg
 
-
-
+    if len(args) >= 1:
+        DF_to_CSV(df, "06_sentiment.csv")
     DF_to_PKL(df, "06_sentiment.pkl")
-    DF_to_CSV(df, "06_sentiment.csv")
+
     return df
 
-def Basic_Stop_Words(pkl_name):
+def Basic_Stop_Words(pkl_name, tdata, *args):
     clean_df = Get_DF_from_PKL(pkl_name)
     m = preprocess(clean_df)
     m.casingNumbers()
     m.removeStopWords("./../stop_words.lst")
 
     stop_df = m.getDF()
-    f_name = "10_test_basic_stop"
-    DF_to_PKL(stop_df, f_name + ".pkl")
-    DF_to_CSV(stop_df, f_name + ".csv")
+    f_name = "10_"+ tdata + "_basic_stop"
 
-def Remove_Infrequent_Words(freq, pkl_name):
+    if len(args) >= 1:
+        DF_to_CSV(stop_df, f_name + ".csv")
+
+    DF_to_PKL(stop_df, f_name + ".pkl")
+
+def Remove_Infrequent_Words(freq, pkl_name, *args):
     basic_stop_df = Get_DF_from_PKL(pkl_name)
     s = stats(basic_stop_df)
     old_dict = s.getDictionary() # returns dictionary
@@ -449,68 +430,46 @@ def Remove_Infrequent_Words(freq, pkl_name):
     stop_df = m.getDF()
     full_name = re.split(r"\.", pkl_name)
     f_name =    full_name[0] + "_rem_freq" + str(freq)
-    DF_to_PKL(stop_df, f_name+".pkl")
-    DF_to_CSV(stop_df, f_name+".csv")
 
+    if len(args) >= 1:
+        DF_to_CSV(stop_df, f_name + ".csv")
+    DF_to_PKL(stop_df, f_name+".pkl")
 
 def main():
     ''' Data Preprocessing Pipeline '''
 
-    ''' 0. Test Data: to DF from CSV '''
-    # Get_Original_CSV("./../test2.csv", True) # outputs: 01_clean_test.csv, 01_clean_test.pkl
-
-    """ 0.1 Test Data: Add attribute: Emojis """
-    # Emoji_Process("00_clean_test.pkl")
-
-    """ 0.2 Test Data: Add attribute: Rating out of 10 """
-    # Rating_Process("01_emoji.pkl")
-
-    """ 0.3 Test Data: Add attribute: Star Reviews"""
-    # Star_Review("02_Rating.pkl")
-
-    """ 0.4 Test Data: Add attribute: # of ! and # of ? """
-    # Punctuation("03_star_review.pkl")
-
-    """ 0.5 Test Data: Add attribute: # of capitalized words """
-    # Capitialized("04_punctuation.pkl/")
-
-    """ 0.6 Test Data: Add attributs: # of positive words and # of negative words"""
-    # Sentiment("05_capitalized.pkl")
-
-    """ 1. Test Data: Removing Words with Basic Stop Word List """
-    # Basic_Stop_Words("06_sentiment.pkl")
-
-    """ 2. Test Data: Remove words with frequency less than 10  """
-    # Remove_Infrequent_Words(10, "10_test_basic_stop.pkl")
-
-
     '''------------------------------ Training Data below -----------------------------'''
-
+    ''' For datatype: select: 'train' or 'test' 
+        For all the methods that are of 0.# add additional argument "True" if you want csv to be outputted as well
+        By default no CSV is outputted 
+    '''
+    datatype = "train"      # CHANGE TO TEST OR TRAIN
     ''' 0. Training Data: to DF from CSV '''
-    Get_Original_CSV("./../train2.csv")
+    Get_Original_CSV("./../train2.csv", datatype) # filename here
 
     """ 0.1 Test Data: Add attribute: Emojis """
     Emoji_Process("00_clean_train.pkl")
 
     """ 0.2 Test Data: Add attribute: Rating out of 10 """
-    # Rating_Process("01_emoji.pkl")
+    Rating_Process("01_emoji.pkl")
 
     """ 0.3 Test Data: Add attribute: Star Reviews"""
-    # Star_Review("02_Rating.pkl")
+    Star_Review("02_Rating.pkl")
 
     """ 0.4 Test Data: Add attribute: # of ! and # of ? """
-    # Punctuation("03_star_review.pkl")
+    Punctuation("03_star_review.pkl")
 
     """ 0.5 Test Data: Add attribute: # of capitalized words """
-    # Capitialized("04_punctuation.pkl")
+    Capitialized("04_punctuation.pkl")
 
     """ 0.6 Test Data: Add attributs: # of positive words and # of negative words"""
-    # Sentiment("05_capitalized.pkl")
+    Sentiment("05_capitalized.pkl")
 
     """ 1. Test Data: Removing Words with Basic Stop Word List """
-    # Basic_Stop_Words("06_sentiment.pkl")
+    Basic_Stop_Words("06_sentiment.pkl", datatype)
 
-
+    """ 2. Test Data: Remove words with frequency less than 10  """
+    Remove_Infrequent_Words(10, "10_"+datatype+"_basic_stop.pkl", True)
 
 
 main()
