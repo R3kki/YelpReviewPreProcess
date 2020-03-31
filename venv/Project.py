@@ -335,10 +335,7 @@ def Capitialized(pkl_name, *args):
             if (word.isupper() and len(word) > 1):
                 caps_review = caps_review + 1
 
-        if caps_review == 0:
-            caps.append('?')
-        else:
-            caps.append(caps_review)
+        caps.append(caps_review)
 
     df['caps'] = caps
 
@@ -383,10 +380,6 @@ def Sentiment(pkl_name, *args):
         totsen = 0
         pos_sen = 0
         neg_sen = 0
-        
-        id = id + 1
-        print(id)
-
         pn = 0
         nn = 0
         for word in review:
