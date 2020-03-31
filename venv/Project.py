@@ -4,6 +4,8 @@ import pickle
 import xlrd
 from ProcessData import ProcessData as preprocess
 from WordStats import WordStats as stats
+from textblob import TextBlob
+from ast import literal_eval
 
 def CSV_Reader(str):
     ''' Reads CSV and returns a pandas dataframe object '''
@@ -298,14 +300,8 @@ def Punctuation(pkl_name, *args):
                     rev_em = rev_em + 1
                 elif c == '?':
                     rev_qm = rev_qm + 1
-        if rev_em == 0:
-            num_em.append('?')
-        else:
-            num_em.append(rev_em)
-        if rev_qm == 0:
-            num_qm.append('?')
-        else:
-            num_qm.append(rev_qm)
+        num_em.append(rev_em)
+        num_qm.append(rev_qm)
 
     # remove ! and ? from the reviews
     text = []
@@ -366,29 +362,51 @@ def Sentiment(pkl_name, *args):
     df = Get_DF_from_PKL(pkl_name)
 
     ''' add each file into its own hashset for faster lookup '''
-    positive_words = file_lookup("../positive-negative-words/positive-words.txt")
-    negative_words = file_lookup("../positive-negative-words/negative-words.txt")
+    f_pos = open("../positive-negative-words/positive-words.txt", "r", encoding="ISO-8859-1")
+    f_neg = open("../positive-negative-words/negative-words.txt", "r", encoding="ISO-8859-1")
 
-    pos = []
-    neg = []
+    positive_words = []
+    negative_words = []
+    
+    for x in f_pos:
+        positive_words.append(x[0:len(x)-1])
+    for x in f_neg:
+        negative_words.append(x[0:len(x)-1])
 
+    pos = []    #list of tot pos words
+    neg = []    #list of tot neg words
+    posSent = []
+    negSent = []
+    sent_tot = []
+    id = 1
     for review in df['text']:
+        totsen = 0
+        pos_sen = 0
+        neg_sen = 0
+        id = id + 1
         pn = 0
         nn = 0
         for word in review:
+            sen = TextBlob(word).sentiment.polarity
+            print(id)
+            if sen < 0:
+                neg_sen = neg_sen + 1
+            if sen > 0:
+                pos_sen = pos_sen + 1
+            totsen = totsen + sen
+                
             if word in positive_words:
                 pn = pn + 1
             if word in negative_words:
                 nn = nn + 1
-        if pn == 0:
-            pos.append('?')
-        else:
-            pos.append(pn)
-        if nn == 0:
-            neg.append('?')
-        else:
-            neg.append(nn)
-
+        posSent.append(pos_sen)
+        negSent.append(neg_sen)
+        pos.append(pn)
+        neg.append(nn)
+    
+    df['positive_sent'] = posSent
+    df['negative_sent'] = negSent
+    df['total_sentiment'] = sent_tot
     df['positive_words'] = pos
     df['negative_words'] = neg
 
@@ -443,25 +461,25 @@ def main():
         For all the methods that are of 0.# add additional argument "True" if you want csv to be outputted as well
         By default no CSV is outputted 
     '''
-    datatype = "test"      # CHANGE TO TEST OR TRAIN
+    datatype = "train"      # CHANGE TO TEST OR TRAIN
     ''' 0. Training Data: to DF from CSV '''
     # Get_Original_CSV("./../train2.csv", datatype) # filename here
-    Get_Original_CSV("./../test2.csv", datatype)  # filename here
+    #Get_Original_CSV("./../train2.csv", datatype)  # filename here
 
     """ 0.1 Test Data: Add attribute: Emojis """
-    Emoji_Process("00_clean_"+datatype+".pkl")
+    #Emoji_Process("00_clean_"+datatype+".pkl")
 
     """ 0.2 Test Data: Add attribute: Rating out of 10 """
-    Rating_Process("01_emoji.pkl")
+    #Rating_Process("01_emoji.pkl")
 
     """ 0.3 Test Data: Add attribute: Star Reviews"""
-    Star_Review("02_Rating.pkl")
+    #Star_Review("02_Rating.pkl")
 
     """ 0.4 Test Data: Add attribute: # of ! and # of ? """
-    Punctuation("03_star_review.pkl")
+    #Punctuation("03_star_review.pkl")
 
     """ 0.5 Test Data: Add attribute: # of capitalized words """
-    Capitialized("04_punctuation.pkl")
+    #Capitialized("04_punctuation.pkl")
 
     """ 0.6 Test Data: Add attributs: # of positive words and # of negative words"""
     Sentiment("05_capitalized.pkl")
