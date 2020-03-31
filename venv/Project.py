@@ -383,12 +383,14 @@ def Sentiment(pkl_name, *args):
         totsen = 0
         pos_sen = 0
         neg_sen = 0
+        
         id = id + 1
+        print(id)
+
         pn = 0
         nn = 0
         for word in review:
             sen = TextBlob(word).sentiment.polarity
-            print(id)
             if sen < 0:
                 neg_sen = neg_sen + 1
             if sen > 0:
@@ -399,6 +401,7 @@ def Sentiment(pkl_name, *args):
                 pn = pn + 1
             if word in negative_words:
                 nn = nn + 1
+        sent_tot.append(totsen)
         posSent.append(pos_sen)
         negSent.append(neg_sen)
         pos.append(pn)
