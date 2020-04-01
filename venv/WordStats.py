@@ -12,7 +12,7 @@ class WordStats:
 
         ''' create dictionary '''
 
-        text = self.data["text"]
+        text = self.data['text']
 
         words = []
         for i in range(len(text)):

@@ -52,7 +52,7 @@ class ProcessData:
             text_row = []
             for j in range(len(text[i])):
                 # clean up words. i.e. "Fun -> fun
-                w = text[i][j]
+                w = text[i][j].lower()
                 if w not in stop_words:
                     text_row.append(w)
 
