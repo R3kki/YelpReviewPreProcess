@@ -32,7 +32,25 @@ Look at patterns of the test data set and find reoccurring features:
 
     5.✔ Count number of positive words and neg words in each review.
         - match pos and neg words from each review w given neg and pos words dataset.
-       
+
+    ************** TODO ***************************
+
+    6. Figure out how to classify neutral words
+    - go through only the neutral reviews and see the most frequent words -> this will be our main dictionary to increase
+    neutral word score
+    - same thing for each of pos and neg words.
+    - diff the difference between which words often occur only in their category.
+    - Will become a final dictionary to sort each category in sentiment function
+
+    - technical details: use the original text reviews pkl and do a full regex substitution to replace all special chars
+    numbers with ' '. then use the alg to seperate words that are attached (if any, i.e. NOThere -> NOT here)
+
+    7. find the difference, ratios between neural and pos and neg sentiment word count
+    - perhaps some words have different weight, i.e. 'amazing' makes it almost certain that it is a good review
+
+    8. using the reports, find which reviews were missclassified and look at the original csv to find any differences
+
+
 
     Basic Stop Words, filtering:
 

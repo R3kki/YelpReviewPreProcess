@@ -443,7 +443,10 @@ def main():
         For all the methods that are of 0.# add additional argument "True" if you want csv to be outputted as well
         By default no CSV is outputted 
     '''
+    # ONLY VALUE YOU HAVE TO CHANGE
     datatype = "test"      # CHANGE TO TEST OR TRAIN
+    # ONLY VALUE YOU HAVE TO CHANGE
+
     ''' 0. Training Data: to DF from CSV '''
     # Get_Original_CSV("./../train2.csv", datatype) # filename here
     Get_Original_CSV("./../test2.csv", datatype)  # filename here
