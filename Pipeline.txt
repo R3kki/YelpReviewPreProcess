@@ -44,6 +44,7 @@ Look at patterns of the test data set and find reoccurring features:
 
     - technical details: use the original text reviews pkl and do a full regex substitution to replace all special chars
     numbers with ' '. then use the alg to seperate words that are attached (if any, i.e. NOThere -> NOT here)
+    - there are some words that has 'not' in front of them (e.g not good), but our algorithm only counts them as good for positive word. so we should detect if there is a 'not' word in front of a pos words, the pos word counts should be decrease by one, same for negative words.
 
     7. find the difference, ratios between neural and pos and neg sentiment word count
     - perhaps some words have different weight, i.e. 'amazing' makes it almost certain that it is a good review
