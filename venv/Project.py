@@ -398,22 +398,22 @@ def Sentiment(pkl_name, *args):
 
     ''' Take the most frequent words in the neutral reviews'''
     # neutral_dict = Label_Dict("train", "neutral") # only need to run once to get the _dict.pkl file
-    df_neutral = Get_DF_from_PKL("000_train_neutral_dict.pkl")
+    # df_neutral = Get_DF_from_PKL("000_train_neutral_dict.pkl")
 
     # positive_dict = Label_Dict("train", "positive")  # only need to run once to get the _dict.pkl file
-    df_positive = Get_DF_from_PKL("000_train_positive_dict.pkl")
+    # df_positive = Get_DF_from_PKL("000_train_positive_dict.pkl")
 
     # negative_dict = Label_Dict("train", "negative")  # only need to run once to get the _dict.pkl file
-    df_negative = Get_DF_from_PKL("000_train_negative_dict.pkl")
+    # df_negative = Get_DF_from_PKL("000_train_negative_dict.pkl")
 
     m = stats(df_neutral)
     neutral_dict = m.getDictionary()
 
-    n = stats(df_positive)
-    positive_dict = n.getDictionary()
-
-    o = stats(df_negative)
-    negative_dict = o.getDictionary()
+    # n = stats(df_positive)
+    # positive_dict = n.getDictionary()
+    #
+    # o = stats(df_negative)
+    # negative_dict = o.getDictionary()
 
     pos = []
     neg = []
@@ -424,13 +424,13 @@ def Sentiment(pkl_name, *args):
         nn = 0
         mn = 0
         for word in review:
-            if word in positive_words and word not in negative_words and word in positive_dict:
-                pn = pn + positive_dict[word]
-            if word in negative_words and word not in positive_words and word in negative_dict:
-                nn = nn + negative_dict[word]
-            if word not in positive_words and word not in negative_words and word in neutral_dict:
-                mn = mn + neutral_dict[word]
 
+            if word in negative_words :
+                nn = nn + 1
+            elif word in positive_words:
+                pn = pn + 1
+            elif word not in positive_words and word not in negative_words and word in neutral_dict:
+                mn = mn + neutral_dict[word]
         pos.append(pn)
         neg.append(nn)
         neutral.append(mn)
