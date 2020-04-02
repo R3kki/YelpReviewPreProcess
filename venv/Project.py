@@ -431,21 +431,9 @@ def Sentiment(pkl_name, *args):
             if word not in positive_words and word not in negative_words and word in neutral_dict:
                 mn = mn + neutral_dict[word]
 
-
-        if pn == 0:
-            pos.append('?')
-        else:
-            pos.append(pn)
-
-        if nn == 0:
-            neg.append('?')
-        else:
-            neg.append(nn)
-
-        if mn == 0:
-            neutral.append('?')
-        else:
-            neutral.append(mn)
+        pos.append(pn)
+        neg.append(nn)
+        neutral.append(mn)
 
     df['positive_words'] = pos
     df['negative_words'] = neg
@@ -526,7 +514,7 @@ def main():
     # Capitialized("04_punctuation.pkl")
 
     """ 0.6 Test Data: Add attributs: # of positive words and # of negative words"""
-    Sentiment("05_capitalized.pkl")
+    Sentiment("05_capitalized.pkl", True)
 
     """ 1. Test Data: Removing Words with Basic Stop Word List """
     # Basic_Stop_Words("06_sentiment.pkl", datatype)
