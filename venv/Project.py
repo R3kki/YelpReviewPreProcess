@@ -392,19 +392,19 @@ def Sentiment(pkl_name, *args):
     df_neutral = Get_DF_from_PKL("000_train_neutral_dict.pkl")
 
     #positive_dict = Label_Dict("test", "positive")  # only need to run once to get the _dict.pkl file
-    df_positive = Get_DF_from_PKL("000_train_positive_dict.pkl")
+    #df_positive = Get_DF_from_PKL("000_train_positive_dict.pkl")
 
     #negative_dict = Label_Dict("test", "negative")  # only need to run once to get the _dict.pkl file
-    df_negative = Get_DF_from_PKL("000_train_negative_dict.pkl")
+    #df_negative = Get_DF_from_PKL("000_train_negative_dict.pkl")
 
     m = stats(df_neutral)
     neutral_dict = m.getDictionary()
 
-    n = stats(df_positive)
-    positive_dict = n.getDictionary()
+    #n = stats(df_positive)
+    #positive_dict = n.getDictionary()
 
-    o = stats(df_negative)
-    negative_dict = o.getDictionary()
+    #o = stats(df_negative)
+    #negative_dict = o.getDictionary()
 
     positive_words = []
     negative_words = []
@@ -420,12 +420,14 @@ def Sentiment(pkl_name, *args):
     negSent = []
     neuSent = []
     sent_tot = []
-
+    i = 1
     for review in df['text']:
+        print(i)
+        i = i + 1
         totsen = 0
-        neu_sen = 0
         pos_sen = 0
         neg_sen = 0
+        neu_sen = 0
         pn = 0
         nn = 0
         mn = 0
@@ -439,10 +441,10 @@ def Sentiment(pkl_name, *args):
                 neu_sen = neu_sen + 1
             totsen = totsen + sen
             
-            if word in positive_words and word not in negative_words and word in positive_dict:
-                pn = pn + positive_dict[word]
-            if word in negative_words and word not in positive_words and word in negative_dict:
-                nn = nn + negative_dict[word]
+            if word in positive_words:
+                pn = pn + 1
+            if word in negative_words:
+                nn = nn + 1
             if word not in positive_words and word not in negative_words and word in neutral_dict:
                 mn = mn + neutral_dict[word]
         posSent.append(pos_sen)
@@ -513,27 +515,27 @@ def main():
         By default no CSV is outputted 
     '''
     # ONLY VALUE YOU HAVE TO CHANGE
-    datatype = "test"      # CHANGE TO TEST OR TRAIN
+    datatype = "train"      # CHANGE TO TEST OR TRAIN
     # ONLY VALUE YOU HAVE TO CHANGE
 
     ''' 0. Training Data: to DF from CSV '''
-    # Get_Original_CSV("./../train2.csv", datatype) # filename here
+    Get_Original_CSV("./../train2.csv", datatype) # filename here
     #Get_Original_CSV("./../test2.csv", datatype)  # filename here
 
     """ 0.1 Test Data: Add attribute: Emojis """
-    #Emoji_Process("00_clean_"+datatype+".pkl")
+    Emoji_Process("00_clean_"+datatype+".pkl")
 
     """ 0.2 Test Data: Add attribute: Rating out of 10 """
-    #Rating_Process("01_emoji.pkl")
+    Rating_Process("01_emoji.pkl")
 
     """ 0.3 Test Data: Add attribute: Star Reviews"""
-    #Star_Review("02_Rating.pkl")
+    Star_Review("02_Rating.pkl")
 
     """ 0.4 Test Data: Add attribute: # of ! and # of ? """
-    #Punctuation("03_star_review.pkl")
+    Punctuation("03_star_review.pkl")
 
     """ 0.5 Test Data: Add attribute: # of capitalized words """
-    #Capitialized("04_punctuation.pkl")
+    Capitialized("04_punctuation.pkl")
 
     """ 0.6 Test Data: Add attributs: # of positive words and # of negative words"""
     Sentiment("05_capitalized.pkl")
