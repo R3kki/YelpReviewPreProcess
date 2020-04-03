@@ -4,6 +4,7 @@ import pickle
 import xlrd
 from ProcessData import ProcessData as preprocess
 from WordStats import WordStats as stats
+from textblob import TextBlob
 
 def CSV_Reader(str):
     ''' Reads CSV and returns a pandas dataframe object '''
@@ -279,8 +280,6 @@ def Star_Review(pkl_name, *args):
         else:
             avg_star.append(sum / len(review))
 
-
-
     df['text'] = text
     df['star'] = avg_star
 
@@ -301,14 +300,8 @@ def Punctuation(pkl_name, *args):
                     rev_em = rev_em + 1
                 elif c == '?':
                     rev_qm = rev_qm + 1
-        if rev_em == 0:
-            num_em.append('?')
-        else:
-            num_em.append(rev_em)
-        if rev_qm == 0:
-            num_qm.append('?')
-        else:
-            num_qm.append(rev_qm)
+        num_em.append(rev_em)
+        num_qm.append(rev_qm)
 
     # remove ! and ? from the reviews
     text = []
@@ -341,11 +334,7 @@ def Capitialized(pkl_name, *args):
         for word in review:
             if (word.isupper() and len(word) > 1):
                 caps_review = caps_review + 1
-
-        if caps_review == 0:
-            caps.append('?')
-        else:
-            caps.append(caps_review)
+        caps.append(caps_review)
 
     df['caps'] = caps
 
@@ -393,48 +382,83 @@ def Sentiment(pkl_name, *args):
     df = Get_DF_from_PKL(pkl_name)
 
     ''' add each file into its own hashset for faster lookup '''
-    positive_words = file_lookup("../positive-negative-words/positive-words.txt")
-    negative_words = file_lookup("../positive-negative-words/negative-words.txt")
+    #positive_words = file_lookup("../positive-negative-words/positive-words.txt")
+    #negative_words = file_lookup("../positive-negative-words/negative-words.txt")
+    f_pos = open("../positive-negative-words/positive-words.txt", "r", encoding="ISO-8859-1")
+    f_neg = open("../positive-negative-words/negative-words.txt", "r", encoding="ISO-8859-1")
 
     ''' Take the most frequent words in the neutral reviews'''
-    # neutral_dict = Label_Dict("train", "neutral") # only need to run once to get the _dict.pkl file
-    # df_neutral = Get_DF_from_PKL("000_train_neutral_dict.pkl")
+    #neutral_dict = Label_Dict("test", "neutral") # only need to run once to get the _dict.pkl file
+    df_neutral = Get_DF_from_PKL("000_train_neutral_dict.pkl")
 
-    # positive_dict = Label_Dict("train", "positive")  # only need to run once to get the _dict.pkl file
-    # df_positive = Get_DF_from_PKL("000_train_positive_dict.pkl")
+    #positive_dict = Label_Dict("test", "positive")  # only need to run once to get the _dict.pkl file
+    #df_positive = Get_DF_from_PKL("000_train_positive_dict.pkl")
 
-    # negative_dict = Label_Dict("train", "negative")  # only need to run once to get the _dict.pkl file
-    # df_negative = Get_DF_from_PKL("000_train_negative_dict.pkl")
+    #negative_dict = Label_Dict("test", "negative")  # only need to run once to get the _dict.pkl file
+    #df_negative = Get_DF_from_PKL("000_train_negative_dict.pkl")
 
     m = stats(df_neutral)
     neutral_dict = m.getDictionary()
 
-    # n = stats(df_positive)
-    # positive_dict = n.getDictionary()
-    #
-    # o = stats(df_negative)
-    # negative_dict = o.getDictionary()
+    #n = stats(df_positive)
+    #positive_dict = n.getDictionary()
 
+    #o = stats(df_negative)
+    #negative_dict = o.getDictionary()
+
+    positive_words = []
+    negative_words = []
+    for x in f_pos:
+        positive_words.append(x[0:len(x)-1])
+    for x in f_neg:
+        negative_words.append(x[0:len(x)-1])
+        
     pos = []
     neg = []
     neutral = []
-
+    posSent = []
+    negSent = []
+    neuSent = []
+    sent_tot = []
+    i = 1
     for review in df['text']:
+        print(i)
+        i = i + 1
+        totsen = 0
+        pos_sen = 0
+        neg_sen = 0
+        neu_sen = 0
         pn = 0
         nn = 0
         mn = 0
         for word in review:
-
-            if word in negative_words :
-                nn = nn + 1
-            elif word in positive_words:
+            sen = TextBlob(word).sentiment.polarity
+            if sen < 0:
+                neg_sen = neg_sen + 1
+            if sen > 0:
+                pos_sen = pos_sen + 1
+            if sen == 0:
+                neu_sen = neu_sen + 1
+            totsen = totsen + sen
+            
+            if word in positive_words:
                 pn = pn + 1
-            elif word not in positive_words and word not in negative_words and word in neutral_dict:
+            if word in negative_words:
+                nn = nn + 1
+            if word not in positive_words and word not in negative_words and word in neutral_dict:
                 mn = mn + neutral_dict[word]
+        posSent.append(pos_sen)
+        negSent.append(neg_sen)
+        neuSent.append(neu_sen)
+        sent_tot.append(totsen)
         pos.append(pn)
         neg.append(nn)
         neutral.append(mn)
-
+    
+    df['postive_sent'] = posSent
+    df['negative_sent'] = negSent
+    df['neutral_sent'] = neuSent
+    df['total_sent'] = sent_tot
     df['positive_words'] = pos
     df['negative_words'] = neg
     df['neutral_words'] = neutral
@@ -495,32 +519,31 @@ def main():
     # ONLY VALUE YOU HAVE TO CHANGE
 
     ''' 0. Training Data: to DF from CSV '''
-    # Get_Original_CSV("./../train2.csv", datatype) # filename here
-    # Get_Original_CSV("./../test2.csv", datatype)  # filename here
+    Get_Original_CSV("./../train2.csv", datatype) # filename here
+    #Get_Original_CSV("./../test2.csv", datatype)  # filename here
 
     """ 0.1 Test Data: Add attribute: Emojis """
-    # Emoji_Process("00_clean_"+datatype+".pkl")
+    Emoji_Process("00_clean_"+datatype+".pkl")
 
     """ 0.2 Test Data: Add attribute: Rating out of 10 """
-    # Rating_Process("01_emoji.pkl")
+    Rating_Process("01_emoji.pkl")
 
     """ 0.3 Test Data: Add attribute: Star Reviews"""
-    # Star_Review("02_Rating.pkl")
+    Star_Review("02_Rating.pkl")
 
     """ 0.4 Test Data: Add attribute: # of ! and # of ? """
-    # Punctuation("03_star_review.pkl")
+    Punctuation("03_star_review.pkl")
 
     """ 0.5 Test Data: Add attribute: # of capitalized words """
-    # Capitialized("04_punctuation.pkl")
+    Capitialized("04_punctuation.pkl")
 
     """ 0.6 Test Data: Add attributs: # of positive words and # of negative words"""
-    Sentiment("05_capitalized.pkl", True)
+    Sentiment("05_capitalized.pkl")
 
     """ 1. Test Data: Removing Words with Basic Stop Word List """
-    # Basic_Stop_Words("06_sentiment.pkl", datatype)
+    Basic_Stop_Words("06_sentiment.pkl", datatype)
 
     """ 2. Test Data: Remove words with frequency less than 10  """
-    # Remove_Infrequent_Words(10, "10_"+datatype+"_basic_stop.pkl", True)
-
+    Remove_Infrequent_Words(10, "10_"+datatype+"_basic_stop.pkl", True)
 
 main()
