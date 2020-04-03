@@ -519,31 +519,31 @@ def main():
     # ONLY VALUE YOU HAVE TO CHANGE
 
     ''' 0. Training Data: to DF from CSV '''
-    Get_Original_CSV("./../train2.csv", datatype) # filename here
+    #Get_Original_CSV("./../train2.csv", datatype) # filename here
     #Get_Original_CSV("./../test2.csv", datatype)  # filename here
 
     """ 0.1 Test Data: Add attribute: Emojis """
-    Emoji_Process("00_clean_"+datatype+".pkl")
+    #Emoji_Process("00_clean_"+datatype+".pkl")
 
     """ 0.2 Test Data: Add attribute: Rating out of 10 """
-    Rating_Process("01_emoji.pkl")
+    #Rating_Process("01_emoji.pkl")
 
     """ 0.3 Test Data: Add attribute: Star Reviews"""
-    Star_Review("02_Rating.pkl")
+    #Star_Review("02_Rating.pkl")
 
     """ 0.4 Test Data: Add attribute: # of ! and # of ? """
-    Punctuation("03_star_review.pkl")
+    #Punctuation("03_star_review.pkl")
 
     """ 0.5 Test Data: Add attribute: # of capitalized words """
-    Capitialized("04_punctuation.pkl")
+    #Capitialized("04_punctuation.pkl")
 
     """ 0.6 Test Data: Add attributs: # of positive words and # of negative words"""
-    Sentiment("05_capitalized.pkl")
+    #Sentiment("05_capitalized.pkl")
 
     """ 1. Test Data: Removing Words with Basic Stop Word List """
-    Basic_Stop_Words("06_sentiment.pkl", datatype)
+    #Basic_Stop_Words("06_sentiment.pkl", datatype)
 
     """ 2. Test Data: Remove words with frequency less than 10  """
-    Remove_Infrequent_Words(10, "10_"+datatype+"_basic_stop.pkl", True)
+    Remove_Infrequent_Words(1000, "10_"+datatype+"_basic_stop.pkl", True)
 
 main()
